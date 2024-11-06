@@ -1,26 +1,26 @@
 import { FaCartPlus } from "react-icons/fa6"
 import { productType } from "../../types/types"
 
-const ProductCard = ({slide}:{slide:productType}) => {
+const ProductCard = ({product}:{product:productType}) => {
   return (
     <div
-    key={slide.id}
-    className="lg:w-[250px] xl:w-[340px] w-full h-[450px] relative lg:px-4 px-2 shadow-lg"
+    key={product.id}
+    className="lg:w-[250px] xl:w-[300px] w-[250px] h-[400px] relative shadow-lg rounded-xl"
   >
     <img
-      className={`w-full h-[75%] object-cover object-left rounded-t-lg ${
-        slide.mirror ? "scale-x-[-1]" : ""
+      className={`w-full h-[75%] object-cover object-left rounded-t-xl ${
+        product.mirror ? "scale-x-[-1]" : ""
       }`}
-      src={slide.imageUrl}
-      alt={slide.alt}
+      src={product.imageUrl}
+      alt={product.alt}
     />
-    <div className="w-full h-[25%] border-gray-500 bg-black border rounded-b-3xl flex justify-between items-center px-4">
+    <div className="w-full h-[25%] bg-transparent flex justify-between items-center px-4">
       <div>
-        <h1 className="text-lg font-bold">{slide.title}</h1>
+        <h1 className="text-lg font-bold">{product.title}</h1>
         <p>
           From{" "}
           <span className="font-bold text-chocolate px-2">
-            Ksh.{slide.price}
+            Ksh.{product.price}
           </span>
         </p>
       </div>

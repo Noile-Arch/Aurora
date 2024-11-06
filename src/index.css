@@ -17,10 +17,7 @@
   color: chocolate; /* Active dot color */
   font-size: 10px;
 }
-.hero{
-  /* global 92%+ browsers support */
-  background: radial-gradient(circle at 0% 40%, rgba(195, 70, 0, 1) 1%, rgba(0, 0, 0, 1) 24%);
-}
+
 :root {
   font-family: Inter, system-ui, Avenir, Helvetica, Arial,
     sans-serif;
@@ -28,8 +25,8 @@
   font-weight: 400;
 
   color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #000000;
+  color: rgba(0, 0, 0, 0.87);
+  background-color: whitesmoke;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;

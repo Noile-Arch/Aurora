@@ -111,22 +111,22 @@ const DesertCarousel = () => {
   };
 
   return (
-    <div className="slider-container text-white w-full h-full relative lg:py-10 py-4 lg:px-4">
+    <div className="slider-container text-white w-full h-[60%] relative lg:py-10 py-4 lg:px-20">
       <Slider {...settings}>
         {slides.map((slide) => (
           <div
             key={slide.id}
-            className="lg:w-[300px] w-[300px]  h-[450px] relative px-4"
+            className="lg:w-[200px] w-[300px]  h-[380px] relative px-4"
           >
             <img
-              className={`w-full h-full object-cover object-left rounded-[20px] ${
+              className={`w-full h-[80%] object-cover object-left rounded-t-2xl ${
                 slide.mirror ? "scale-x-[-1]" : ""
               }`}
               src={slide.imageUrl}
               alt={slide.alt}
             />
-            <div className="w-full px-4 flex flex-col justify-end items-center h-full absolute inset-0">
-              <div className="bg-chocolate font-['DreamToBerich'] w-full h-20 flex justify-center items-center">
+            <div className="w-full px-4 flex flex-col justify-end items-center h-full absolute inset-0 ">
+              <div className="bg-chocolate font-['DreamToBerich'] w-full h-[20%] flex justify-center items-center rounded-b-2xl">
                 <h1>{slide.title}</h1>
               </div>
             </div>
