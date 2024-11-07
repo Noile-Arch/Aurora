@@ -5,7 +5,7 @@ import ProductCard from "../shared/ProductCard";
 const Menu = () => {
   return (
     <div className="w-full h-full px-4 md:px-10 lg:px-20 xl:px-20 flex flex-col justify-start items-center">
-      <div className="w-full h-20 flex justify-center items-center font-semibold">
+      <div className="w-full h-20 flex justify-center flex-wrap items-center font-semibold">
         <Link
           to={"/"}
           className="px-5 py-1 rounded-2xl text-white bg-chocolate"
@@ -28,8 +28,8 @@ const Menu = () => {
           Cheesecake
         </Link>
       </div>
-      <div className="w-full h-auto flex justify-center items-center flex-wrap gap-4">
-        {data.map((product)=><ProductCard product={product}/>)}
+      <div className="w-full h-auto flex justify-center items-center flex-wrap gap-4 py-4">
+        {data.map((product)=><ProductCard product={product} key={product.id}/>)}
       </div>
     </div>
   );

@@ -9,12 +9,10 @@ interface PageLayoutProps {
 
 const PageLayout: React.FC<PageLayoutProps> = ({ children }) => {
   return (
-    <div className="w-full h-auto flex flex-col justify-start">
+    <div className="w-full h-auto">
       <Navbar />
-      <div>
-        {children ? children : <Outlet />}
-      </div>
-      <Footer/>
+      <div>{children ? children : <Outlet />}</div>
+      <Footer />
     </div>
   );
 };

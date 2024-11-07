@@ -4,7 +4,7 @@ import Cart from "./Cart";
 
 const Navbar = () => {
   return (
-    <div className="w-full h-[100px] bg-transparent backdrop-blur-sm z-50 absolute inset-0 py-2">
+    <div className="w-full h-[80px] bg-transparent backdrop-blur-sm z-50 absolute inset-0 py-2">
       <div className="w-full h-full flex xl:justify-around justify-around items-center  ">
         <Link
           to={"/"}
@@ -16,11 +16,11 @@ const Navbar = () => {
             className="w-full h-full rounded-full"
           />
         </Link>
-        <div className="xl:flex hidden font-semibold justify-center items-center gap-16">
+        <div className="xl:flex hidden font-semibold justify-center items-center gap-10">
           <Link to={"/"}>Shop</Link>
           <Link to={"/"}>Sale</Link>
           <Link to={"/"}>Blog</Link>
-          <Link to={"/"}>About Us</Link>
+          <Link to={"/about"}>About Us</Link>
           <Link to={"/"}>Contact</Link>
         </div>
         <div className="w-auto flex justify-end items-center gap-5">
