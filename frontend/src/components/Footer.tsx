@@ -70,13 +70,13 @@ const Footer = () => {
           <div className="flex flex-col justify-center gap-2 items-start">
             <h1 className="text-lg text-white font-semibold">Site map</h1>
             <div className="flex flex-col justify-end items-start gap-2">
-              <Link to="/">Home</Link>
-              <Link to="/">Assortment</Link>
-              <Link to="/">About</Link>
-              <Link to="/">Advantage</Link>
-              <Link to="/">Menu</Link>
-              <Link to="/">Testimonials</Link>
-              <Link to="/">Contact</Link>
+              <a href="/">Home</a>
+              <a href="#assortment">Assortment</a>
+              <a href="#about-us">About</a>
+              <a href="#advantage">Advantage</a>
+              <a href="#menu">Menu</a>
+              <a href="#info">Testimonials</a>
+              <a href="#contact-us">Contact</a>
             </div>
           </div>
           <div className="flex flex-col justify-center gap-2 items-start">
@@ -107,7 +107,10 @@ const Footer = () => {
               to="/"
               className="w-full flex justify-start gap-2 py-2 items-center"
             >
-              <FaPhoneAlt size={30} className="p-2 text-white rounded-full bg-[#282627]" />
+              <FaPhoneAlt
+                size={30}
+                className="p-2 text-white rounded-full bg-[#282627]"
+              />
               <p className="">+254-123456789</p>
             </Link>
             <Link

@@ -1,11 +1,11 @@
 import { FaCartPlus } from "react-icons/fa6"
 import { productType } from "../../types/types"
 
-const ProductCard = ({product}:{product:productType}) => {
+const FavouritesCard = ({product}:{product:productType}) => {
   return (
     <div
     key={product.id}
-    className="lg:w-[250px] xl:w-[300px] w-[250px] h-[400px] relative shadow-lg rounded-xl"
+    className="lg:w-[220px] xl:w-[250px] w-[250px] h-[320px] relative shadow-lg shadow-secondary rounded-xl"
   >
     <img
       className={`w-full h-[75%] object-cover object-left rounded-t-xl ${
@@ -32,4 +32,4 @@ const ProductCard = ({product}:{product:productType}) => {
   )
 }
 
-export default ProductCard
+export default FavouritesCard
