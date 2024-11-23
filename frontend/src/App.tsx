@@ -9,6 +9,8 @@ import Notifications from "./components/profile/Notifications";
 import Favourites from "./components/profile/Favourites";
 import OrderHistory from "./components/profile/OrderHistory";
 import ContactUs from "./components/home/ContactUs";
+import SignIn from "./pages/auth/SignIn";
+import SignUp from "./pages/auth/SignUp";
 
 function App() {
   return (
@@ -16,6 +18,8 @@ function App() {
       <Router>
         <Routes>
           <Route path="/" element={<LandingPage />} />
+          <Route path="/login" element={<SignIn />} />
+          <Route path="/register" element={<SignUp />} />
           <Route path="/about" element={<AboutUs />} />
           <Route path="/contact-us" element={<ContactUs />} />
           <Route path="/profile" element={<Profile />}>
