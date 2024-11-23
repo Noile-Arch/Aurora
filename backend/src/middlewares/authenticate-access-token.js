@@ -1,27 +1,39 @@
-const verifyAccessToken = require("../services/users/verify-access-token");
+const jwt = require('jsonwebtoken');
+const User = require('../models/users/userModel');
 
-const authenticateAccessToken = async (req, res, next) => {
+exports.protect = async (req, res, next) => {
   try {
-    const authHeaders = req.headers["authorization"];
-    const token = authHeaders && authHeaders.split(" ")[1];
+    let token;
+    if (req.headers.authorization?.startsWith('Bearer')) {
+      token = req.headers.authorization.split(' ')[1];
+    }
 
     if (!token) {
-      return res.status(401).json({ message: "Invalid access token" });
+      return res.status(401).json({
+        status: 'error',
+        message: 'Not authorized to access this route'
+      });
     }
 
-    const result = await verifyAccessToken(token);
-
-    if (!result.success) {
-      return res.status(403).json({ error: result.error });
-    }
-
-    req.user = result.data;
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = await User.findById(decoded.id).select('-password');
     next();
   } catch (error) {
-    return res
-      .status(500)
-      .json({ message: "Internal server error", error: error.message });
+    res.status(401).json({
+      status: 'error',
+      message: 'Not authorized to access this route'
+    });
   }
 };
 
-module.exports = authenticateAccessToken;
+exports.authorize = (...roles) => {
+  return (req, res, next) => {
+    if (!roles.includes(req.user.role)) {
+      return res.status(403).json({
+        status: 'error',
+        message: 'Not authorized to perform this action'
+      });
+    }
+    next();
+  };
+};

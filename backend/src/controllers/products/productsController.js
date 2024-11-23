@@ -1,96 +1,278 @@
-const { Types } = require("mongoose");
-const productModel = require("../../models/products/productModel");
-const asyncHandler = require("express-async-handler");
-const Joi = require("joi");
+const Product = require('../../models/products/productModel');
 
-const productSchema = Joi.object({
-  title: Joi.string().min(3).max(100).required(),
-  image: Joi.string().uri().optional(),
-  stock: Joi.number().integer().min(0).required(),
-  category: Joi.string().min(3).max(50).required(),
-  description: Joi.string().max(500).optional(),
-  ingredients: Joi.array().items(Joi.string().min(1)).optional(),
-  price: Joi.number().positive().precision(2).required(),
-});
+// Create a new product
+exports.createProduct = async (req, res) => {
+  try {
+    const {
+      name,
+      description,
+      price,
+      category,
+      image,
+      ingredients,
+      preparationTime
+    } = req.body;
 
-// getall
-exports.getAllProducts = asyncHandler(async (req, res, next) => {
-  try {
-    const products = await productModel.find({});
-    res.status(200).json({
-      success: true,
-      data: products,
-    });
-  } catch (error) {
-    next(error);
-  }
-});
-// getbyid
-exports.getProductById = asyncHandler(async (req, res, next) => {
-  const id = req.params.id;
-  if (!Types.ObjectId.isValid(id)) {
-    res.status(400).json({
-      success: false,
-      message: "Invalid object is",
-    });
-  }
-  try {
-    const product = await productModel.findById(id);
-    res.status(200).json({
-      success: true,
-      data: product,
-    });
-  } catch (error) {
-    next(error);
-  }
-});
-// getbycategory
-exports.getProductByCategory = asyncHandler(async (req, res, next) => {
-  try {
-    const product = await productModel.find({ category: req.params.category });
-    if (!product) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Product not found" });
+    if (!name || !description || !price || !category || !image || !preparationTime) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Please provide all required fields'
+      });
     }
-    res.status(200).json({ success: true, data: product });
-  } catch (error) {
-    next(error);
-  }
-});
-// bytitle
-exports.getProductByTitle = asyncHandler(async (req, res, next) => {
-  try {
-    const product = await productModel.find({ title: req.params.title });
-    if (!product) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Product not found" });
+
+    const validCategories = ['cakes', 'pastries', 'cookies', 'bread', 'other'];
+    if (!validCategories.includes(category)) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Invalid category'
+      });
     }
-    res.status(200).json({ success: true, data: product });
-  } catch (error) {
-    next(error);
-  }
-});
 
-// add product
-exports.addProduct = asyncHandler(async (req, res, next) => {
-  const { error, value } = productSchema.validate(req.body);
-  if (error) {
-    return res
-      .status(400)
-      .json({ success: false, message: error.details[0].message });
-  }
+    const product = await Product.create({
+      name,
+      description,
+      price,
+      category,
+      image,
+      ingredients: ingredients || [],
+      preparationTime,
+      createdBy: req.user._id,
+      isAvailable: true
+    });
 
-  try {
-    const newProduct = new productModel(value);
-    await newProduct.save();
     res.status(201).json({
-      success: true,
-      message: "Product added successfully",
-      data: newProduct,
+      status: 'success',
+      data: product
     });
   } catch (error) {
-    next(error);
+    console.error('Create product error:', error);
+    res.status(500).json({
+      status: 'error',
+      message: error.message
+    });
   }
-});
+};
+
+exports.getAllProducts = async (req, res) => {
+  try {
+    const filters = {};
+    
+    if (req.query.category) {
+      filters.category = req.query.category;
+    }
+    if (req.query.isAvailable) {
+      filters.isAvailable = req.query.isAvailable === 'true';
+    }
+    if (req.query.minPrice) {
+      filters.price = { $gte: parseFloat(req.query.minPrice) };
+    }
+    if (req.query.maxPrice) {
+      filters.price = { ...filters.price, $lte: parseFloat(req.query.maxPrice) };
+    }
+
+    const products = await Product.find(filters)
+      .populate('createdBy', 'name email')
+      .sort('-createdAt');
+
+    res.status(200).json({
+      status: 'success',
+      results: products.length,
+      data: products
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: 'error',
+      message: error.message
+    });
+  }
+};
+
+exports.getProduct = async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id)
+      .populate('createdBy', 'name email');
+
+    if (!product) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'Product not found'
+      });
+    }
+
+    res.status(200).json({
+      status: 'success',
+      data: product
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: 'error',
+      message: error.message
+    });
+  }
+};
+
+exports.updateProduct = async (req, res) => {
+  try {
+    const {
+      name,
+      description,
+      price,
+      category,
+      image,
+      ingredients,
+      isAvailable,
+      preparationTime
+    } = req.body;
+
+    if (category) {
+      const validCategories = ['cakes', 'pastries', 'cookies', 'bread', 'other'];
+      if (!validCategories.includes(category)) {
+        return res.status(400).json({
+          status: 'error',
+          message: 'Invalid category'
+        });
+      }
+    }
+
+    const product = await Product.findById(req.params.id);
+
+    if (!product) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'Product not found'
+      });
+    }
+
+    // Check if user is authorized to update
+    if (product.createdBy.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
+      return res.status(403).json({
+        status: 'error',
+        message: 'Not authorized to update this product'
+      });
+    }
+
+    const updatedProduct = await Product.findByIdAndUpdate(
+      req.params.id,
+      {
+        name,
+        description,
+        price,
+        category,
+        image,
+        ingredients,
+        isAvailable,
+        preparationTime
+      },
+      {
+        new: true,
+        runValidators: true
+      }
+    ).populate('createdBy', 'name email');
+
+    res.status(200).json({
+      status: 'success',
+      data: updatedProduct
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: 'error',
+      message: error.message
+    });
+  }
+};
+
+exports.deleteProduct = async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id);
+
+    if (!product) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'Product not found'
+      });
+    }
+
+    if (product.createdBy.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
+      return res.status(403).json({
+        status: 'error',
+        message: 'Not authorized to delete this product'
+      });
+    }
+
+    await Product.findByIdAndDelete(req.params.id);
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Product deleted successfully'
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: 'error',
+      message: error.message
+    });
+  }
+};
+
+exports.searchProducts = async (req, res) => {
+  try {
+    const { query } = req.query;
+    
+    if (!query) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Please provide a search query'
+      });
+    }
+
+    const products = await Product.find({
+      $or: [
+        { name: { $regex: query, $options: 'i' } },
+        { description: { $regex: query, $options: 'i' } },
+        { category: { $regex: query, $options: 'i' } }
+      ],
+      isAvailable: true
+    }).populate('createdBy', 'name email');
+
+    res.status(200).json({
+      status: 'success',
+      results: products.length,
+      data: products
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: 'error',
+      message: error.message
+    });
+  }
+};
+
+
+exports.getProductsByCategory = async (req, res) => {
+  try {
+    const { category } = req.params;
+    
+    const validCategories = ['cakes', 'pastries', 'cookies', 'bread', 'other'];
+    if (!validCategories.includes(category)) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Invalid category'
+      });
+    }
+
+    const products = await Product.find({
+      category,
+      isAvailable: true
+    }).populate('createdBy', 'name email');
+
+    res.status(200).json({
+      status: 'success',
+      results: products.length,
+      data: products
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: 'error',
+      message: error.message
+    });
+  }
+};

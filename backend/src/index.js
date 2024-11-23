@@ -1,36 +1,47 @@
-const envFile = `.env.${process.env.NODE_ENV || "development"}`;
-require("dotenv").config({ path: envFile });
-const errorHandler = require("./middlewares/error-handler");
-const db = require("./configs/db.config");
-const userRoutes = require("./routes/users/userRoutes");
-const productRoutes = require("./routes/products/productRoutes")
-const PORT = process.env.PORT || 5000;
-const express = require("express");
+const express = require('express');
+const cors = require('cors');
+const helmet = require('helmet');
+const mongoose = require('mongoose');
+require('dotenv').config();
+
+const authRoutes = require('./routes/auth/auth.routes');
+const productRoutes = require('./routes/products/productRoutes');
+const orderRoutes = require('./routes/orders/order.routes');
+const paymentRoutes = require('./routes/payments/payment.routes');
+
 const app = express();
-const colors = require("colors/safe");
-const bodyParser = require("body-parser");
 
-// middlewares
-app.use(bodyParser.json());
-app.use("/api/user", userRoutes);
-app.use("/api/product", productRoutes);
+// Middleware
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(cors());
+app.use(helmet());
 
-const startServer = () => {
-  app.listen(PORT, () => {
-    console.log(colors.cyan(`Server listening on port ${PORT}`));
+// Routes
+app.use('/api/auth', authRoutes);
+app.use('/api/products', productRoutes);
+app.use('/api/orders', orderRoutes);
+app.use('/api/payments', paymentRoutes);
+
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({
+    status: 'error',
+    message: 'Something went wrong!'
   });
-};
-
-db.once("open", () => {
-  console.log(colors.bgMagenta("Connected to db"));
-  startServer();
 });
 
-app.use(errorHandler);
+// Database connection
+mongoose.connect(process.env.MONGODB_URI)
+  .then(() => console.log('Connected to MongoDB'))
+  .catch((err) => console.error('MongoDB connection error:', err));
 
-db.once("error", (err) => {
-  console.log(colors.red(`Error occurred ${err}`));
-  process.exit(1);
+// Start server
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
 });
 
 module.exports = app;
