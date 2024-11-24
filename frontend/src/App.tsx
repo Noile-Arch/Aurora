@@ -17,11 +17,13 @@ import Dashboard from "./pages/admin/Dashboard";
 import AddPastry from "./pages/admin/AddPastry";
 import Basket from "./pages/views/Basket";
 import AdminRoute from "./access/AdminRoute";
-import DashboardLayout from "./pages/admin/Layout";
 import Cakes from "./pages/Cakes";
 import ProductDetails from "./pages/ProductDetails";
 import Checkout from "./pages/views/Checkout";
 import PaymentStatus from "./pages/views/PaymentStatus";
+import Payments from "./pages/admin/Payments";
+import Users from "./pages/admin/Users";
+import Orders from "./pages/admin/Orders";
 
 function App() {
   return (
@@ -35,23 +37,9 @@ function App() {
         <Route element={<AdminRoute />}>
           <Route path="/admin/dashboard" element={<Dashboard />} />
           <Route path="/admin/add-pastry" element={<AddPastry />} />
-
-          <Route
-            path="/admin/dashboard"
-            element={
-              <DashboardLayout>
-                <Dashboard />
-              </DashboardLayout>
-            }
-          />
-          <Route
-            path="/admin/add-pastry"
-            element={
-              <DashboardLayout>
-                <AddPastry />
-              </DashboardLayout>
-            }
-          />
+          <Route path="/admin/orders" element={<Orders />} />
+          <Route path="/admin/payments" element={<Payments />} />
+          <Route path="/admin/users" element={<Users />} />
         </Route>
 
         {/* Protected routes with MainLayout */}

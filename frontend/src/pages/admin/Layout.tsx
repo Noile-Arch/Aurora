@@ -4,19 +4,19 @@ import {
   MdDashboard,
   MdAddCircle,
   MdShoppingCart,
-  MdCategory,
   MdPayment,
   MdPeople,
-  MdSettings,
   MdLogout,
   MdMenu,
 } from "react-icons/md";
+import { useAuth } from "../../hooks/use/user";
 
 interface DashboardLayoutProps {
   children: ReactNode;
 }
 
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
+  const { user } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const navigate = useNavigate();
   const location = useLocation();
@@ -38,21 +38,11 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       path: "/admin/orders",
     },
     {
-      name: "Categories",
-      icon: <MdCategory size={24} />,
-      path: "/admin/categories",
-    },
-    {
       name: "Payments",
       icon: <MdPayment size={24} />,
       path: "/admin/payments",
     },
     { name: "Users", icon: <MdPeople size={24} />, path: "/admin/users" },
-    {
-      name: "Settings",
-      icon: <MdSettings size={24} />,
-      path: "/admin/settings",
-    },
   ];
 
   const handleLogout = () => {
@@ -68,7 +58,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         } fixed inset-y-0 left-0 z-50 w-64 bg-chocolate text-white transition-transform duration-300 ease-in-out lg:static lg:translate-x-0`}
       >
         <div className="flex h-18 items-center justify-center">
-        <img src={"/Logo.png"} alt="" className="size-24 rounded-full"/>
+          <img src={"/Logo.png"} alt="" className="size-24 rounded-full" />
         </div>
 
         {/* Navigation Menu */}
@@ -114,7 +104,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
               Admin Dashboard
             </h1>
             <div className="flex items-center gap-4">
-              <span className="text-sm text-gray-600">Admin User</span>
+              <span className="text-sm text-gray-600">{user?.email}</span>
               <img
                 className="h-8 w-8 rounded-full"
                 src="https://ui-avatars.com/api/?name=Admin+User"
