@@ -9,6 +9,7 @@ import Notifications from "./components/profile/Notifications";
 import Favourites from "./components/profile/Favourites";
 import OrderHistory from "./components/profile/OrderHistory";
 import ContactUs from "./components/home/ContactUs";
+import Basket from "./pages/views/Basket";
 
 function App() {
   return (
@@ -18,11 +19,12 @@ function App() {
           <Route path="/" element={<LandingPage />} />
           <Route path="/about" element={<AboutUs />} />
           <Route path="/contact-us" element={<ContactUs />} />
+          <Route path="/cart" element={<Basket />} />
           <Route path="/profile" element={<Profile />}>
-            <Route path="/profile/profile-info" element={<ProfileInfo/>} />
-            <Route path="/profile/notifications" element={<Notifications/>} />
-            <Route path="/profile/favourites" element={<Favourites/>}  />
-            <Route path="/profile/order-history" element={<OrderHistory/>}  />
+            <Route path="/profile/profile-info" element={<ProfileInfo />} />
+            <Route path="/profile/notifications" element={<Notifications />} />
+            <Route path="/profile/favourites" element={<Favourites />} />
+            <Route path="/profile/order-history" element={<OrderHistory />} />
           </Route>
         </Routes>
       </Router>

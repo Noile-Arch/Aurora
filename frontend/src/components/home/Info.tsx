@@ -2,9 +2,9 @@ import { RiDoubleQuotesL } from "react-icons/ri";
 
 const Info = () => {
   return (
-    <div className="w-full h-full  px-4 md:px-10  lg:px-20">
+    <div className="w-full h-full  px-6 md:px-10  lg:px-20">
       <div className="w-full h-full flex md:flex-row flex-col justify-around items-center gap-4">
-        <div className="lg:w-[420px] w-full py-4  lg:h-[320px] h-auto bg-white shadow-md shadow-secondary rounded-2xl flex flex-col gap-2 justify-center items-center px-4">
+        <div className="lg:w-[420px] w-full py-6  lg:h-[auto] h-auto bg-white shadow-md shadow-secondary rounded-2xl flex flex-col gap-2 justify-center items-center px-4">
           <p className="text-chocolate font-bold text-5xl">
             <RiDoubleQuotesL />
           </p>
@@ -24,7 +24,7 @@ const Info = () => {
           </div>
           <h1 className="text-[#676767]">Wade Warren</h1>
         </div>
-        <div className="lg:w-[420px] w-full py-4 lg:h-[320px] bg-white shadow-md shadow-secondary rounded-2xl flex flex-col gap-2 justify-center items-center px-4">
+        <div className="lg:w-[420px] w-full py-8 lg:h-[auto] bg-white shadow-md shadow-secondary rounded-2xl flex flex-col gap-2 justify-center items-center px-4">
           <p className="text-chocolate font-bold text-5xl">
             <RiDoubleQuotesL />
           </p>
@@ -44,7 +44,7 @@ const Info = () => {
           </div>
           <h1 className="text-[#676767]">Darel Steward</h1>
         </div>
-        <div className="lg:w-[420px] w-full py-4 lg:h-[320px] bg-white shadow-md shadow-secondary rounded-2xl flex flex-col gap-2 justify-center items-center px-4">
+        <div className="lg:w-[420px] w-full py-6 lg:h-[auto] bg-white shadow-md shadow-secondary rounded-2xl flex flex-col gap-2 justify-center items-center px-4">
           <p className="text-chocolate font-bold text-5xl">
             <RiDoubleQuotesL />
           </p>
