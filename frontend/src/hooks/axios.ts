@@ -4,21 +4,17 @@ const api = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
-  },
+  }
 });
 
-// Request interceptor for API calls
-api.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('auroraAuth');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
+// Add request interceptor to include token
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('auroraAuth');
+  if (token) {
+    const parsedToken = typeof token === 'string' ? token.replace(/"/g, '') : token;
+    config.headers.Authorization = `Bearer ${parsedToken}`;
   }
-);
+  return config;
+});
 
 export default api;

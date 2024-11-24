@@ -42,6 +42,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Add this useEffect to verify token on app load
+  useEffect(() => {
+    const initAuth = async () => {
+      try {
+        const token = localStorage.getItem("auroraAuth");
+        if (token) {
+          const response = await authApi.verify();
+          setUser(response.data.user);
+        }
+      } catch (error) {
+        console.error("Auth initialization error:", error);
+        localStorage.removeItem("auroraAuth");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    initAuth();
+  }, []);
+
   const fetchProducts = async () => {
     try {
       setLoading(true);
@@ -68,8 +88,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = async (email: string, password: string) => {
     try {
       const response = await authApi.login({ email, password });
-      // Debug log
-
       const { token, user: userData } = response.data;
 
       // Store token
@@ -77,8 +95,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       // Set user state
       setUser(userData);
-
-      
     } catch (error) {
       console.error("Login error:", error);
       throw error;
@@ -115,7 +131,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         loading,
       }}
     >
-      {children}
+      {loading ? null : children}
     </AuthContext.Provider>
   );
 }
