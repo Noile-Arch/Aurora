@@ -25,6 +25,9 @@ const SignIn = () => {
   useEffect(() => {
     if (user) {
       navigate("/", { replace: true });
+      if(user.role == "admin"){
+        navigate("/admin/dashboard", { replace: true })
+      }
     }
   }, [user, navigate]);
 
@@ -32,10 +35,10 @@ const SignIn = () => {
     try {
       setIsLoading(true);
       await login(data.email, data.password);
-      console.log(data);
-      console.log(user);
+      // console.log(data);
+      // console.log(user);
       toast.success(`Welcome back!`);
-      navigate("/", { replace: true });
+      // navigate("/", { replace: true });
     } catch (error) {
       const status = (error as { response?: { status: number } })?.response
         ?.status;

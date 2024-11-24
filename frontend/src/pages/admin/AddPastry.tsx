@@ -7,9 +7,11 @@ interface PastryForm {
   description: string;
   price: number;
   category: string;
+  subCategory: string;
   image: File | null;
-  isAvailable: boolean;
+  stockQuantity: number;
   preparationTime: number;
+  ingredients: string[];
 }
 
 const AddPastry = () => {
@@ -18,9 +20,11 @@ const AddPastry = () => {
     description: "",
     price: 0,
     category: "",
+    subCategory: "",
     image: null,
-    isAvailable: true,
+    stockQuantity: 0,
     preparationTime: 30,
+    ingredients: [],
   });
 
   const [imagePreview, setImagePreview] = useState<string>("");
@@ -28,14 +32,14 @@ const AddPastry = () => {
   const [error, setError] = useState<string>("");
   const [success, setSuccess] = useState<string>("");
 
-  const categories = [
-    "Cakes",
-    "Cookies",
-    "Pastries",
-    "Breads",
-    "Desserts",
-    "Muffins",
-  ];
+  // Categories with their subcategories
+  const categoryOptions = {
+    cakes: ['birthday', 'wedding', 'custom', 'cupcakes', 'cheesecakes'],
+    pastries: ['croissants', 'danishes', 'pies', 'tarts', 'eclairs'],
+    cookies: ['chocolate chip', 'sugar', 'shortbread', 'macarons', 'biscotti'],
+    bread: ['sourdough', 'baguettes', 'rolls', 'whole wheat', 'rye'],
+    other: ['seasonal', 'special', 'gluten-free', 'vegan']
+  };
 
   const handleInputChange = (
     e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -64,63 +68,101 @@ const AddPastry = () => {
     setImagePreview("");
   };
 
+  const handleCategoryChange = (e: ChangeEvent<HTMLSelectElement>) => {
+    setFormData(prev => ({
+      ...prev,
+      category: e.target.value,
+      subCategory: '', // Reset subcategory when category changes
+    }));
+  };
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError("");
     setSuccess("");
 
+    // Validate required fields
+    if (!formData.name.trim()) {
+      setError("Name is required");
+      setLoading(false);
+      return;
+    }
+
+    if (!formData.image) {
+      setError("Image is required");
+      setLoading(false);
+      return;
+    }
+
     try {
       const formDataToSend = new FormData();
       
-      formDataToSend.append('name', formData.name);
-      formDataToSend.append('description', formData.description);
+      // Append all fields
+      formDataToSend.append('name', formData.name.trim());
+      formDataToSend.append('description', formData.description.trim());
       formDataToSend.append('price', formData.price.toString());
       formDataToSend.append('category', formData.category);
+      formDataToSend.append('subCategory', formData.subCategory);
       formDataToSend.append('preparationTime', formData.preparationTime.toString());
-      formDataToSend.append('isAvailable', formData.isAvailable.toString());
+      formDataToSend.append('stockQuantity', formData.stockQuantity.toString());
       
+      // Handle ingredients array properly
+      if (formData.ingredients.length > 0) {
+        formDataToSend.append('ingredients', JSON.stringify(formData.ingredients));
+      }
+      
+      // Append image last
       if (formData.image) {
         formDataToSend.append('image', formData.image);
       }
 
+      // Log form data for debugging
+      for (let pair of formDataToSend.entries()) {
+        console.log(pair[0] + ': ' + pair[1]);
+      }
+
       const token = localStorage.getItem("auroraAuth");
-      
       if (!token) {
         throw new Error("Authentication token not found");
       }
 
       const response = await fetch(
-        `${import.meta.env.VITE_API_BASE_URL}/products/`,
+        `${import.meta.env.VITE_API_BASE_URL}/products`,
         {
           method: "POST",
           headers: {
             Authorization: `Bearer ${token.replace(/"/g, '')}`,
+            // Remove Content-Type header for FormData
           },
           body: formDataToSend,
         }
       );
 
       const data = await response.json();
+      console.log('Server Response:', data); // Debug log
 
       if (!response.ok) {
         throw new Error(data.message || "Failed to add pastry");
       }
 
       setSuccess("Pastry added successfully!");
+      // Reset form
       setFormData({
         name: "",
         description: "",
         price: 0,
         category: "",
+        subCategory: "",
         image: null,
-        isAvailable: true,
+        stockQuantity: 0,
         preparationTime: 30,
+        ingredients: [],
       });
       setImagePreview("");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to add pastry");
       console.error("Error details:", err);
+      setError(err instanceof Error ? err.message : "Failed to add pastry");
     } finally {
       setLoading(false);
     }
@@ -204,17 +246,73 @@ const AddPastry = () => {
               <select
                 name="category"
                 value={formData.category}
-                onChange={handleInputChange}
+                onChange={handleCategoryChange}
                 required
-                className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 shadow-sm focus:border-orimary focus:outline-none focus:ring-1 focus:ring-primary bg-white"
+                className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 shadow-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary bg-white"
               >
                 <option value="">Select category</option>
-                {categories.map((category) => (
+                {Object.keys(categoryOptions).map((category) => (
                   <option key={category} value={category}>
-                    {category}
+                    {category.charAt(0).toUpperCase() + category.slice(1)}
                   </option>
                 ))}
               </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                Sub Category
+              </label>
+              <select
+                name="subCategory"
+                value={formData.subCategory}
+                onChange={handleInputChange}
+                required
+                disabled={!formData.category}
+                className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 shadow-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary bg-white disabled:bg-gray-100"
+              >
+                <option value="">Select sub category</option>
+                {formData.category &&
+                  categoryOptions[formData.category as keyof typeof categoryOptions].map((subCat) => (
+                    <option key={subCat} value={subCat}>
+                      {subCat.charAt(0).toUpperCase() + subCat.slice(1)}
+                    </option>
+                  ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                Stock Quantity
+              </label>
+              <input
+                type="number"
+                name="stockQuantity"
+                value={formData.stockQuantity}
+                onChange={handleInputChange}
+                required
+                min="0"
+                className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 shadow-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary bg-white"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                Ingredients (comma-separated)
+              </label>
+              <input
+                type="text"
+                name="ingredients"
+                value={formData.ingredients.join(', ')}
+                onChange={(e) => 
+                  setFormData(prev => ({
+                    ...prev,
+                    ingredients: e.target.value.split(',').map(item => item.trim())
+                  }))
+                }
+                placeholder="flour, sugar, butter"
+                className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 shadow-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary bg-white"
+              />
             </div>
 
             <div>
@@ -229,7 +327,8 @@ const AddPastry = () => {
                 required
                 min="0"
                 step="0.01"
-                className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 shadow-sm focus:border-orimary focus:outline-none focus:ring-1 focus:ring-primary bg-white"
+                placeholder="Enter price"
+                className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 shadow-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary bg-white"
               />
             </div>
 
@@ -262,23 +361,6 @@ const AddPastry = () => {
               rows={4}
               className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 shadow-sm focus:border-orimary focus:outline-none focus:ring-1 focus:ring-primary bg-white"
             />
-          </div>
-
-          {/* Stock Status */}
-          <div className="flex items-center">
-            <input
-              type="checkbox"
-              name="isAvailable"
-              checked={formData.isAvailable}
-              onChange={(e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  isAvailable: e.target.checked,
-                }))
-              }
-              className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-purple-500 bg-white"
-            />
-            <label className="ml-2 text-sm text-gray-700">Is Available</label>
           </div>
 
           {/* Submit Button */}
