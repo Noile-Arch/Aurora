@@ -5,7 +5,7 @@ import { FaRegEdit } from "react-icons/fa";
 
 const Navbar = () => {
   return (
-    <div className="w-full h-[80px] bg-transparent backdrop-blur-sm z-50 absolute inset-0 py-2">
+    <div className="w-full h-[80px] bg-white z-50 relative py-2">
       <div className="w-full h-full flex xl:justify-around justify-around items-center  ">
         <Link
           to={"/"}
