@@ -12,17 +12,13 @@ const {
 router.post('/mpesa-callback', mpesaCallback);
 
 // Protected routes
+// Protected routes
 router.use(protect);
 
-<<<<<<< HEAD
+
 router.get('/logs', authorize('admin'), getPaymentLogs);
 router.get('/receipt/:receiptNumber', authorize('admin'), getPaymentByReceipt);
 router.post('/simulate', simulatePayment);
-=======
-// Customer routes
-router.post('/simulate', initiatePayment);
-router.get('/status/:orderId', checkPaymentStatus);
->>>>>>> 25c41eb (feat: implement admin dashboard - view orders)
 
 // Admin routes
 router.use(authorize('admin'));
