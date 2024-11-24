@@ -16,7 +16,16 @@ exports.protect = async (req, res, next) => {
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = await User.findById(decoded.id).select('-password');
+    const user = await User.findById(decoded.userId).select('-password');
+    
+    if (!user) {
+      return res.status(401).json({
+        status: 'error',
+        message: 'User no longer exists'
+      });
+    }
+
+    req.user = user;
     next();
   } catch (error) {
     res.status(401).json({
@@ -28,7 +37,7 @@ exports.protect = async (req, res, next) => {
 
 exports.authorize = (...roles) => {
   return (req, res, next) => {
-    if (!roles.includes(req.user.role)) {
+    if (!req.user || !roles.includes(req.user.role)) {
       return res.status(403).json({
         status: 'error',
         message: 'Not authorized to perform this action'
