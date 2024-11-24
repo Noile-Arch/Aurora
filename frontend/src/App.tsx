@@ -30,6 +30,10 @@ function App() {
 
         {/* Admin routes */}
         <Route element={<AdminRoute />}>
+
+          <Route path="/admin/dashboard" element={<Dashboard />} />
+          <Route path="/admin/add-pastry" element={<AddPastry />} />
+
           <Route
             path="/admin/dashboard"
             element={
@@ -46,8 +50,7 @@ function App() {
               </DashboardLayout>
             }
           />
-          <Route path="/admin/dashboard" element={<Dashboard />} />
-          <Route path="/admin/add-pastry" element={<AddPastry />} />
+
         </Route>
 
         {/* Protected routes with MainLayout */}
