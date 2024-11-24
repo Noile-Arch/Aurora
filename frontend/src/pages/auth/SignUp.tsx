@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Link } from "react-router-dom";
 import AuthLayout from "./Layout";
 import { FaEyeSlash } from "react-icons/fa";
@@ -8,46 +7,55 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { FaEye } from "react-icons/fa";
 import { useState } from "react";
 import toast from "react-hot-toast";
-import { useAuth } from "../../hooks/useAuth";
+import { useAuth } from "../../hooks/use/user";
+import { z } from "zod";
+import { useNavigate } from "react-router-dom";
+
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  // Add other user properties you need
+}
+
+type SignupResult = {
+  ok: boolean;
+  status?: number;
+  message?: string;
+  data?: {
+    user: User;
+    token: string;
+  };
+};
 
 const SignUp = () => {
   const [inpType, setInpType] = useState("password");
   const [isLoading, setIsLoading] = useState(false);
-  const { setUser } = useAuth();
+  const { setUser, signup } = useAuth();
+  const navigate = useNavigate();
 
   const {
     register,
     handleSubmit,
     formState: { errors },
     setError,
-  } = useForm({
+  } = useForm<z.infer<typeof registerSchema>>({
     resolver: zodResolver(registerSchema),
   });
 
-  const onSubmit = async (data: any) => {
-    console.log("Form submitted:", data)
-
+  const onSubmit = async (data: z.infer<typeof registerSchema>) => {
     try {
       setIsLoading(true);
-      const res = await fetch(
-        `${import.meta.env.VITE_API_BASE_URL}/auth/register`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            name: data.name,
-            email: data.email,
-            password: data.password,
-          }),
-        }
-      );
+      const result = (await signup(data)) as unknown as SignupResult;
 
-      const result = await res.json();
+      if (result === undefined || result === null) {
+        toast.error("Registration failed. Please try again");
+        return;
+      }
 
-      if (!res.ok) {
-        switch (res.status) {
+      if (!result?.ok) {
+        switch (result?.status) {
           case 409:
             setError("email", {
               type: "manual",
@@ -67,17 +75,22 @@ const SignUp = () => {
         return;
       }
 
-      const {
-        data: { user, token },
-      } = result;
+      if (!result.data) {
+        toast.error("Registration failed. Please try again");
+        return;
+      }
 
-      localStorage.setItem("auroraAuth", JSON.stringify(token));
-
-      setUser(user);
-
+      const { user, token } = result.data;
+      console.log(user);
+      localStorage.setItem("auroraAuth", token);
+      setUser({ ...user, role: user.role as "user" | "admin" });
       toast.success("Account created successfully!");
+      navigate("/");
     } catch (error) {
-      console.log(error);
+      console.error(error);
+      toast.error("An unexpected error occurred");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -162,14 +175,10 @@ const SignUp = () => {
               {...register("password")}
             />
             <div className="h-full flex items-center justify-center px-4">
-              {inpType == "password" ? (
+              {inpType === "password" ? (
                 <FaEyeSlash onClick={handleTogglePass} />
               ) : (
-                <FaEye
-                  onClick={() => {
-                    setInpType("password");
-                  }}
-                />
+                <FaEye onClick={handleTogglePass} />
               )}
             </div>
           </div>
@@ -198,14 +207,10 @@ const SignUp = () => {
               {...register("confirmPassword")}
             />
             <div className="h-full flex items-center justify-center px-4">
-              {inpType == "password" ? (
+              {inpType === "password" ? (
                 <FaEyeSlash onClick={handleTogglePass} />
               ) : (
-                <FaEye
-                  onClick={() => {
-                    setInpType("password");
-                  }}
-                />
+                <FaEye onClick={handleTogglePass} />
               )}
             </div>
           </div>

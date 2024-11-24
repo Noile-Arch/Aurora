@@ -2,7 +2,7 @@ import Advantage from "../components/home/Advantage";
 import DesertCarousel from "../components/carousels/DesertCarousel";
 import Hero from "../components/home/Hero";
 import TrustUs from "../components/home/TrustUs";
-import PageLayout from "./PageLayout";
+
 import Menu from "../components/home/Menu";
 import Info from "../components/home/Info";
 import FollowUs from "../components/home/FollowUs";
@@ -10,7 +10,7 @@ import ContactUs from "../components/home/ContactUs";
 
 const LandingPage = () => { 
   return (
-    <PageLayout>
+    <>
       <section className="w-full lg:h-[700px]">
         <Hero />
       </section>
@@ -69,7 +69,7 @@ const LandingPage = () => {
           <ContactUs />
         </div>
       </section>
-    </PageLayout>
+    </>
   );
 };
 

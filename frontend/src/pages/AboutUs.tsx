@@ -1,8 +1,8 @@
-import PageLayout from "./PageLayout";
+
 
 const AboutUs = () => {
   return (
-    <PageLayout>
+    <>
       <div className="w-full h-auto">
         <section className="w-full h-[600px] mt-20">
           <img
@@ -166,7 +166,7 @@ const AboutUs = () => {
           </div>
         </section>
       </div>
-    </PageLayout>
+    </>
   );
 };
 
