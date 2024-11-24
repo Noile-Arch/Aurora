@@ -19,6 +19,23 @@ const productSchema = new mongoose.Schema({
     required: true,
     enum: ['cakes', 'pastries', 'cookies', 'bread', 'other']
   },
+  subCategory: {
+    type: String,
+    required: true,
+    validate: {
+      validator: function(value) {
+        const subCategories = {
+          cakes: ['birthday', 'wedding', 'custom', 'cupcakes', 'cheesecakes'],
+          pastries: ['croissants', 'danishes', 'pies', 'tarts', 'eclairs'],
+          cookies: ['chocolate chip', 'sugar', 'shortbread', 'macarons', 'biscotti'],
+          bread: ['sourdough', 'baguettes', 'rolls', 'whole wheat', 'rye'],
+          other: ['seasonal', 'special', 'gluten-free', 'vegan']
+        };
+        return subCategories[this.category]?.includes(value);
+      },
+      message: 'Invalid subcategory for the selected category'
+    }
+  },
   image: {
     type: String,
     required: true
@@ -26,12 +43,14 @@ const productSchema = new mongoose.Schema({
   ingredients: [{
     type: String
   }],
-  isAvailable: {
-    type: Boolean,
-    default: true
+  stockQuantity: {
+    type: Number,
+    required: true,
+    min: 0,
+    default: 0
   },
   preparationTime: {
-    type: Number, // in minutes
+    type: Number,
     required: true
   },
   createdBy: {
@@ -42,5 +61,14 @@ const productSchema = new mongoose.Schema({
 }, {
   timestamps: true
 });
+
+// Virtual field to check if product is available
+productSchema.virtual('isAvailable').get(function() {
+  return this.stockQuantity > 0;
+});
+
+// Ensure virtuals are included in JSON output
+productSchema.set('toJSON', { virtuals: true });
+productSchema.set('toObject', { virtuals: true });
 
 module.exports = mongoose.model('Product', productSchema);

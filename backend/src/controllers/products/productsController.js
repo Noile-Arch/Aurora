@@ -1,43 +1,55 @@
 const Product = require('../../models/products/productModel');
+const fs = require('fs').promises;
+const path = require('path');
 
 // Create a new product
 exports.createProduct = async (req, res) => {
   try {
+    // Check if file exists
+    if (!req.file) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Please upload a product image'
+      });
+    }
+
     const {
       name,
       description,
       price,
       category,
-      image,
-      ingredients,
-      preparationTime
+      subCategory,
+      preparationTime,
+      stockQuantity,
+      ingredients
     } = req.body;
 
-    if (!name || !description || !price || !category || !image || !preparationTime) {
+    // Validate required fields
+    if (!name || !description || !price || !category || !subCategory || !preparationTime) {
+      // Delete uploaded file if validation fails
+      if (req.file) {
+        await fs.unlink(req.file.path);
+      }
       return res.status(400).json({
         status: 'error',
         message: 'Please provide all required fields'
       });
     }
 
-    const validCategories = ['cakes', 'pastries', 'cookies', 'bread', 'other'];
-    if (!validCategories.includes(category)) {
-      return res.status(400).json({
-        status: 'error',
-        message: 'Invalid category'
-      });
-    }
+    // Create image URL
+    const imageUrl = `/uploads/${req.file.filename}`;
 
     const product = await Product.create({
       name,
       description,
-      price,
+      price: Number(price),
       category,
-      image,
-      ingredients: ingredients || [],
-      preparationTime,
-      createdBy: req.user._id,
-      isAvailable: true
+      subCategory,
+      image: imageUrl,
+      preparationTime: Number(preparationTime),
+      stockQuantity: Number(stockQuantity) || 0,
+      ingredients: ingredients ? ingredients.split(',').map(item => item.trim()) : [],
+      createdBy: req.user._id
     });
 
     res.status(201).json({
@@ -45,8 +57,11 @@ exports.createProduct = async (req, res) => {
       data: product
     });
   } catch (error) {
-    console.error('Create product error:', error);
-    res.status(500).json({
+    // Delete uploaded file if product creation fails
+    if (req.file) {
+      await fs.unlink(req.file.path);
+    }
+    res.status(400).json({
       status: 'error',
       message: error.message
     });
@@ -113,68 +128,61 @@ exports.getProduct = async (req, res) => {
 
 exports.updateProduct = async (req, res) => {
   try {
-    const {
-      name,
-      description,
-      price,
-      category,
-      image,
-      ingredients,
-      isAvailable,
-      preparationTime
-    } = req.body;
-
-    if (category) {
-      const validCategories = ['cakes', 'pastries', 'cookies', 'bread', 'other'];
-      if (!validCategories.includes(category)) {
-        return res.status(400).json({
-          status: 'error',
-          message: 'Invalid category'
-        });
+    const updates = { ...req.body };
+    
+    // Handle image upload if new image is provided
+    if (req.file) {
+      // Delete old image if it exists
+      const product = await Product.findById(req.params.id);
+      if (product && product.image) {
+        const oldImagePath = path.join('public', product.image);
+        try {
+          await fs.unlink(oldImagePath);
+        } catch (err) {
+          console.log('Error deleting old image:', err);
+        }
       }
+      
+      updates.image = `/uploads/${req.file.filename}`;
     }
 
-    const product = await Product.findById(req.params.id);
+    // Convert string numbers to actual numbers
+    if (updates.price) updates.price = Number(updates.price);
+    if (updates.preparationTime) updates.preparationTime = Number(updates.preparationTime);
+    if (updates.stockQuantity) updates.stockQuantity = Number(updates.stockQuantity);
+    
+    // Handle ingredients array
+    if (updates.ingredients && typeof updates.ingredients === 'string') {
+      updates.ingredients = updates.ingredients.split(',').map(item => item.trim());
+    }
+
+    const product = await Product.findByIdAndUpdate(
+      req.params.id,
+      updates,
+      { new: true, runValidators: true }
+    );
 
     if (!product) {
+      // Delete uploaded file if product not found
+      if (req.file) {
+        await fs.unlink(req.file.path);
+      }
       return res.status(404).json({
         status: 'error',
         message: 'Product not found'
       });
     }
 
-    // Check if user is authorized to update
-    if (product.createdBy.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
-      return res.status(403).json({
-        status: 'error',
-        message: 'Not authorized to update this product'
-      });
-    }
-
-    const updatedProduct = await Product.findByIdAndUpdate(
-      req.params.id,
-      {
-        name,
-        description,
-        price,
-        category,
-        image,
-        ingredients,
-        isAvailable,
-        preparationTime
-      },
-      {
-        new: true,
-        runValidators: true
-      }
-    ).populate('createdBy', 'name email');
-
     res.status(200).json({
       status: 'success',
-      data: updatedProduct
+      data: product
     });
   } catch (error) {
-    res.status(500).json({
+    // Delete uploaded file if update fails
+    if (req.file) {
+      await fs.unlink(req.file.path);
+    }
+    res.status(400).json({
       status: 'error',
       message: error.message
     });
