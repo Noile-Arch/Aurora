@@ -1,5 +1,7 @@
 const jwt = require('jsonwebtoken');
 const User = require('../../models/users/userModel');
+const asyncHandler = require("express-async-handler");
+const bcrypt = require("bcryptjs");
 
 const generateToken = (id) => {
   if (!process.env.JWT_SECRET) {
@@ -59,44 +61,77 @@ exports.register = async (req, res) => {
   }
 };
 
-exports.login = async (req, res) => {
+exports.login = asyncHandler(async (req, res, next) => {
   try {
     const { email, password } = req.body;
-
-    if (!email || !password) {
-      return res.status(400).json({
-        status: 'error',
-        message: 'Please provide email and password'
-      });
-    }
-
     const user = await User.findOne({ email });
-    if (!user || !(await user.comparePassword(password))) {
-      return res.status(401).json({
+    
+    if (!user) {
+      return res.status(401).json({ 
         status: 'error',
-        message: 'Invalid email or password'
+        message: "Incorrect email or password" 
       });
     }
 
-    const token = generateToken(user._id);
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+      return res.status(401).json({ 
+        status: 'error',
+        message: "Incorrect email or password" 
+      });
+    }
+
+    const token = jwt.sign(
+      { userId: user._id },
+      process.env.JWT_SECRET,
+      { expiresIn: "30d" }
+    );
 
     res.status(200).json({
       status: 'success',
       data: {
+        token,
         user: {
           id: user._id,
-          name: user.name,
           email: user.email,
-          role: user.role
-        },
-        token
+          name: user.name || '',
+          role: user.role || 'user'
+        }
       }
     });
   } catch (error) {
-    console.error('Login error:', error);
-    res.status(500).json({
-      status: 'error',
-      message: error.message
-    });
+    next(error);
   }
-}; 
+});
+
+async function verify(req, res) {
+  try {
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) {
+      return res.status(401).json({ message: 'No token provided' });
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await User.findById(decoded.userId).select('-password');
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.json({
+      status: 'success',
+      data: {
+        user: {
+          id: user._id,
+          email: user.email,
+          name: user.name,
+          role: user.role
+        }
+      }
+    });
+  } catch (error) {
+    res.status(401).json({ message: 'Invalid token' });
+  }
+}
+
+exports.verify = verify; 
