@@ -11,13 +11,12 @@ import OrderHistory from "./components/profile/OrderHistory";
 import ContactUs from "./components/home/ContactUs";
 import SignIn from "./pages/auth/SignIn";
 import SignUp from "./pages/auth/SignUp";
-<<<<<<< HEAD
+
 import Dashboard from "./pages/admin/Dashboard";
 import AddPastry from "./pages/admin/AddPastry";
-=======
+
 import Basket from "./pages/views/Basket";
 
->>>>>>> 9d00fb7bd430ad679d548937a611c40a4b6d80e8
 
 function App() {
   return (
@@ -29,12 +28,11 @@ function App() {
           <Route path="/register" element={<SignUp />} />
           <Route path="/about" element={<AboutUs />} />
           <Route path="/contact-us" element={<ContactUs />} />
-<<<<<<< HEAD
           <Route path="/admin/dashboard" element={<Dashboard />} />
           <Route path="/admin/add-pastry" element={<AddPastry />} />
-=======
+
           <Route path="/cart" element={<Basket />} />
->>>>>>> 9d00fb7bd430ad679d548937a611c40a4b6d80e8
+
           <Route path="/profile" element={<Profile />}>
             <Route path="/profile/profile-info" element={<ProfileInfo />} />
             <Route path="/profile/notifications" element={<Notifications />} />
