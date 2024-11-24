@@ -4,6 +4,7 @@ const helmet = require('helmet');
 const mongoose = require('mongoose');
 require('dotenv').config();
 const path = require('path');
+const fs = require('fs');
 
 const authRoutes = require('./routes/auth/auth.routes');
 const productRoutes = require('./routes/products/productRoutes');
