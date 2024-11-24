@@ -6,7 +6,7 @@ import { IoLocationOutline } from "react-icons/io5";
 
 import { FaInstagram, FaPhoneAlt } from "react-icons/fa";
 import { MdOutlineEmail } from "react-icons/md";
-<FaInstagram />;
+
 const Footer = () => {
   return (
     <div className="w-full h-auto bg-greybg flex flex-col justify-start  items-center text-white">

@@ -1,9 +1,17 @@
 const mongoose = require('mongoose');
 
-const paymentLogSchema = new mongoose.Schema({
+const paymentSchema = new mongoose.Schema({
   orderId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Order',
+    required: true
+  },
+  merchantRequestID: {
+    type: String,
+    required: true
+  },
+  amount: {
+    type: Number,
     required: true
   },
   mpesaReceiptNumber: {
@@ -15,32 +23,19 @@ const paymentLogSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  amount: {
-    type: Number,
-    required: true
-  },
   transactionDate: {
-    type: Date,
-    required: true
-  },
-  resultCode: {
-    type: Number,
-    required: true
-  },
-  resultDesc: {
     type: String,
     required: true
   },
   status: {
     type: String,
-    enum: ['success', 'failed'],
-    required: true
+    enum: ['pending', 'completed', 'failed'],
+    default: 'pending'
   },
-  rawCallback: {
-    type: Object  // Stores the complete M-Pesa callback data
+  createdAt: {
+    type: Date,
+    default: Date.now
   }
-}, {
-  timestamps: true
 });
 
-module.exports = mongoose.model('PaymentLog', paymentLogSchema);
+module.exports = mongoose.model('Payment', paymentSchema);

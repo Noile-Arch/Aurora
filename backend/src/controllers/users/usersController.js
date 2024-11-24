@@ -5,127 +5,153 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
 
-exports.login = asyncHandler(async (req, res, next) => {
+
+
+exports.allUsers = asyncHandler(async (req, res) => {
   try {
-    const { email, password } = req.body;
-    const user = await usersModel.findOne({ email });
+    // Get query parameters for filtering and pagination
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const search = req.query.search || '';
+    const role = req.query.role || '';
+    const status = req.query.status || '';
+
+    // Build query
+    const query = {};
     
-    if (!user) {
-      return res.status(401).json({ 
-        status: 'error',
-        message: "Incorrect email or password" 
-      });
+    // Add search functionality
+    if (search) {
+      query.$or = [
+        { name: { $regex: search, $options: 'i' } },
+        { email: { $regex: search, $options: 'i' } }
+      ];
     }
 
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-    if (!isPasswordValid) {
-      return res.status(401).json({ 
-        status: 'error',
-        message: "Incorrect email or password" 
-      });
+    // Add role filter
+    if (role) {
+      query.role = role;
     }
 
-    const token = jwt.sign(
-      { userId: user._id },
-      process.env.JWT_ACCESS_TOKEN,
-      { expiresIn: "30d" }
-    );
+    // Add status filter
+    if (status) {
+      query.status = status;
+    }
+
+    // Calculate skip value for pagination
+    const skip = (page - 1) * limit;
+
+    // Get total count for pagination
+    const total = await usersModel.countDocuments(query);
+
+    // Fetch users
+    const users = await usersModel
+      .find(query)
+      .select('-password') // Exclude password
+      .sort({ createdAt: -1 }) // Sort by newest first
+      .skip(skip)
+      .limit(limit);
+
+    // Calculate pagination info
+    const totalPages = Math.ceil(total / limit);
+    const hasNextPage = page < totalPages;
+    const hasPrevPage = page > 1;
 
     res.status(200).json({
       status: 'success',
       data: {
-        token,
-        user: {
-          id: user._id,
-          email: user.email,
-          name: user.name || '',
-          role: user.role || 'user'
+        users,
+        pagination: {
+          total,
+          page,
+          totalPages,
+          hasNextPage,
+          hasPrevPage
         }
       }
     });
   } catch (error) {
-    next(error);
-  }
-});
-
-exports.register = asyncHandler(async (req, res) => {
-  try {
-    const { email, password } = req.body;
-
-    const existingUser = await usersModel.findOne({ email });
-    if (existingUser) {
-      return res.status(400).json({ message: "User already registered" });
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    const newUser = new usersModel({
-      email: email,
-      password: hashedPassword,
-    });
-
-    await newUser.save();
-    res.status(201).json({ message: "User registered successfully!" });
-  } catch (error) {
-    res
-      .status(400)
-      .json({ message: `Error while registering user: ${error.message}` });
-  }
-});
-
-exports.orders = asyncHandler(async (req,res, next)=>{
-    try {
-        res.status(200).json({
-            success: true,
-            message: "You can access this page"
-        })
-    } catch (error) {
-        next(error)
-    }
-});
-
-exports.verify = asyncHandler(async (req, res) => {
-  try {
-    const token = req.headers.authorization?.split(' ')[1];
-    
-    if (!token) {
-      return res.status(401).json({ 
-        status: 'error',
-        message: 'No token provided' 
-      });
-    }
-
-    const decoded = jwt.verify(token, process.env.JWT_ACCESS_TOKEN);
-    const user = await usersModel.findById(decoded.userId).select('-password');
-
-    if (!user) {
-      return res.status(404).json({ 
-        status: 'error',
-        message: 'User not found' 
-      });
-    }
-
-    res.status(200).json({
-      status: 'success',
-      data: {
-        user: {
-          id: user._id,
-          email: user.email,
-          name: user.name,
-          role: user.role
-        }
-      }
-    });
-  } catch (error) {
-    if (error.name === 'JsonWebTokenError') {
-      return res.status(401).json({ 
-        status: 'error',
-        message: 'Invalid token' 
-      });
-    }
-    res.status(500).json({ 
+    res.status(500).json({
       status: 'error',
-      message: error.message 
+      message: error.message
+    });
+  }
+});
+
+// Add user update functionality
+exports.updateUser = asyncHandler(async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, email, role, status } = req.body;
+
+    // Check if user exists
+    const user = await usersModel.findById(id);
+    if (!user) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'User not found'
+      });
+    }
+
+    // Update user
+    const updatedUser = await usersModel.findByIdAndUpdate(
+      id,
+      {
+        name,
+        email,
+        role,
+        status,
+        updatedAt: Date.now()
+      },
+      { new: true, runValidators: true }
+    ).select('-password');
+
+    res.status(200).json({
+      status: 'success',
+      data: {
+        user: updatedUser
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: 'error',
+      message: error.message
+    });
+  }
+});
+
+// Add user delete functionality
+exports.deleteUser = asyncHandler(async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Check if user exists
+    const user = await usersModel.findById(id);
+    if (!user) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'User not found'
+      });
+    }
+
+    // Prevent deleting admin users
+    if (user.role === 'admin') {
+      return res.status(403).json({
+        status: 'error',
+        message: 'Admin users cannot be deleted'
+      });
+    }
+
+    // Delete user
+    await usersModel.findByIdAndDelete(id);
+
+    res.status(200).json({
+      status: 'success',
+      message: 'User deleted successfully'
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: 'error',
+      message: error.message
     });
   }
 });

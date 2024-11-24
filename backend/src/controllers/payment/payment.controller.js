@@ -1,6 +1,8 @@
 const Order = require('../../models/orders/orderModel');
 const PaymentLog = require('../../models/payments/paymentLogModel');
 const MpesaService = require('../../services/mpesa.service');
+const Payment = require('../../models/payments/paymentLogModel');
+const Payment = require('../../models/payments/paymentLogModel');
 
 exports.simulatePayment = async (req, res) => {
   try {
@@ -151,6 +153,70 @@ exports.getPaymentByReceipt = async (req, res) => {
     res.status(500).json({
       status: 'error',
       message: error.message
+    });
+  }
+};
+
+// Add payment status check endpoint
+exports.checkPaymentStatus = async (req, res) => {
+  try {
+    const { orderId } = req.params;
+    
+    const order = await Order.findById(orderId);
+    if (!order) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'Order not found'
+      });
+    }
+
+    const payment = await Payment.findOne({ orderId });
+
+    res.json({
+      status: 'success',
+      data: {
+        paymentStatus: order.payment.status,
+        mpesaReceiptNumber: order.payment.mpesaReceiptNumber,
+        payment: payment || null
+      }
+    });
+  } catch (error) {
+    console.error('Payment status check error:', error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Failed to check payment status'
+    });
+  }
+};
+
+// Add payment status check endpoint
+exports.checkPaymentStatus = async (req, res) => {
+  try {
+    const { orderId } = req.params;
+    
+    const order = await Order.findById(orderId);
+    if (!order) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'Order not found'
+      });
+    }
+
+    const payment = await Payment.findOne({ orderId });
+
+    res.json({
+      status: 'success',
+      data: {
+        paymentStatus: order.payment.status,
+        mpesaReceiptNumber: order.payment.mpesaReceiptNumber,
+        payment: payment || null
+      }
+    });
+  } catch (error) {
+    console.error('Payment status check error:', error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Failed to check payment status'
     });
   }
 };

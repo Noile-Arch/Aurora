@@ -11,6 +11,7 @@ const productRoutes = require('./routes/products/productRoutes');
 const orderRoutes = require('./routes/orders/order.routes');
 const paymentRoutes = require('./routes/payments/payment.routes');
 const dashboardRoutes = require('./routes/dashboard/dashboard.routes');
+const userRoutes = require('./routes/users/userRoutes');
 const app = express();
 
 // Middleware
@@ -29,10 +30,12 @@ app.use(helmet({
 
 // Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/users', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/admin', dashboardRoutes);
+app.use('/api/users', userRoutes);
 
 // Serve static files from public directory
 app.use('/uploads', 
