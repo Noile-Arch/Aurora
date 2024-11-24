@@ -1,10 +1,11 @@
 @base_url = http://localhost:5000/api
 @contentType = application/json
-@adminToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3NDIyYzFkMGViMTAwM2Q1M2ZhODdhNyIsImlhdCI6MTczMjM5MTc2NSwiZXhwIjoxNzM0OTgzNzY1fQ.2XyyBtCVB8JkQiTsxJL4jWEvZl-jp9amXqCyViQFNLk
+@adminToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2NzQyMmMxZDBlYjEwMDNkNTNmYTg3YTciLCJpYXQiOjE3MzI0NjE2MDMsImV4cCI6MTczNTA1MzYwM30.0jiD04iUKTb71yMMIJKC_vxTlfMagu2KJ42aa8h8Bpk
 @authToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3NDIyYzE3MGViMTAwM2Q1M2ZhODdhNCIsImlhdCI6MTczMjM5MTc0NCwiZXhwIjoxNzM0OTgzNzQ0fQ.lI7kIEMUEUYSK7Hre-UoNuQxd8qZgHdxrqO0BS6BIeI
 ###
-POST {{base_url}}/payments/simulate-payment
+POST {{base_url}}/payments/simulate
 Content-Type: {{contentType}}
+Authorization: Bearer {{adminToken}}
 
 {
     "phoneNumber": "254719520494",
@@ -12,8 +13,10 @@ Content-Type: {{contentType}}
 }
 
 ### mpesa callback
-POST {{base_url}}/payments/mpesa-callback
+POST {{base_url}}/payments/51c72d
 
+###
+GET {{base_url}}/status/mpesa-callback
 ### Register new user
 POST {{base_url}}/auth/register
 Content-Type: {{contentType}}
@@ -23,6 +26,7 @@ Content-Type: {{contentType}}
     "email": "test@example.com",
     "password": "password123"
 }
+
 
 ### Register admin user
 POST {{base_url}}/auth/register

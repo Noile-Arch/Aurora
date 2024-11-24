@@ -19,6 +19,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { Link } from "react-router-dom";
+import EditProductModal from '../../components/EditProductModal';
 
 interface DashboardMetrics {
   totalOrders: number;
@@ -83,6 +84,8 @@ export default function Dashboard() {
   const [metrics, setMetrics] = useState<DashboardMetrics>(defaultMetrics);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   useEffect(() => {
     fetchDashboardData();
@@ -149,6 +152,11 @@ export default function Dashboard() {
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to delete product");
     }
+  };
+
+  const handleEditClick = (product: Product) => {
+    setSelectedProduct(product);
+    setIsEditModalOpen(true);
   };
 
   if (loading) {
@@ -321,12 +329,12 @@ export default function Dashboard() {
                     </td>
                     <td className="whitespace-nowrap px-6 py-4">
                       <div className="flex space-x-2">
-                        <Link
-                          to={`/admin/edit-product/${product._id}`}
+                        <button
+                          onClick={() => handleEditClick(product)}
                           className="text-blue-600 hover:text-blue-900"
                         >
                           <MdEdit size={20} />
-                        </Link>
+                        </button>
                         <button
                           onClick={() => handleDeleteProduct(product._id)}
                           className="text-red-600 hover:text-red-900"
@@ -491,6 +499,19 @@ export default function Dashboard() {
           </div>
         </div>
       </div>
+      <EditProductModal
+        product={selectedProduct}
+        isOpen={isEditModalOpen}
+        onClose={() => {
+          setIsEditModalOpen(false);
+          setSelectedProduct(null);
+        }}
+        onUpdate={() => {
+          fetchDashboardData();
+          setIsEditModalOpen(false);
+          setSelectedProduct(null);
+        }}
+      />
     </Layout>
   );
 }
