@@ -17,6 +17,8 @@ import Dashboard from "./pages/admin/Dashboard";
 import AddPastry from "./pages/admin/AddPastry";
 import Basket from "./pages/views/Basket";
 import AdminRoute from "./access/AdminRoute";
+import DashboardLayout from "./pages/admin/Layout";
+import Cakes from "./pages/Cakes";
 
 function App() {
   return (
@@ -28,6 +30,22 @@ function App() {
 
         {/* Admin routes */}
         <Route element={<AdminRoute />}>
+          <Route
+            path="/admin/dashboard"
+            element={
+              <DashboardLayout>
+                <Dashboard />
+              </DashboardLayout>
+            }
+          />
+          <Route
+            path="/admin/add-pastry"
+            element={
+              <DashboardLayout>
+                <AddPastry />
+              </DashboardLayout>
+            }
+          />
           <Route path="/admin/dashboard" element={<Dashboard />} />
           <Route path="/admin/add-pastry" element={<AddPastry />} />
         </Route>
@@ -39,6 +57,16 @@ function App() {
             <ProtectedRoute>
               <MainLayout>
                 <LandingPage />
+              </MainLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/cakes"
+          element={
+            <ProtectedRoute>
+              <MainLayout>
+                <Cakes />
               </MainLayout>
             </ProtectedRoute>
           }
