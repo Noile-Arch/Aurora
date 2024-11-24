@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 const Logo = ({ image }: { image: string }) => {
   return (
     <Link to={"/"} className="cursor-pointer">
-      <img src={image} alt="" className="w-[80px] md:w-[160px] rounded-full"/>
+      <img src={image} alt="" className="w-auto md:w-[160px] h-full rounded-full"/>
     </Link>
   );
 };
