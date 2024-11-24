@@ -43,6 +43,7 @@ const Navbar = () => {
         {/* Desktop Menu */}
         <div className="xl:flex hidden font-semibold justify-center items-center gap-10">
           <Link to={"/"}>Shop</Link>
+          <Link to={"/cakes"}>Cakes</Link>
           <Link to={"/about"}>About Us</Link>
           <a href={"#contact-us"}>Contact Us</a>
         </div>
@@ -64,6 +65,13 @@ const Navbar = () => {
                   className="hover:text-chocolate transition-colors"
                 >
                   Shop
+                </Link>
+                <Link
+                  to={"/cakes"}
+                  onClick={() => setIsOpen(false)}
+                  className="hover:text-chocolate transition-colors"
+                >
+                  Cakes
                 </Link>
                 <Link
                   to={"/about"}
