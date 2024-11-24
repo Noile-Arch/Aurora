@@ -1,6 +1,6 @@
 const Order = require('../../models/orders/orderModel');
-const MpesaService = require("../../services/mpesa.service")
-
+const PaymentLog = require('../../models/payments/paymentLogModel');
+const MpesaService = require('../../services/mpesa.service');
 
 exports.simulatePayment = async (req, res) => {
     try {
@@ -51,15 +51,16 @@ exports.mpesaCallback = async (req, res) => {
       CallbackMetadata 
     } = stkCallback;
 
-    // MerchantRequestID contains the order ID we passed during payment initiation
     const orderId = MerchantRequestID.replace('TEST', '');
 
     if (ResultCode === 0) {
+      // Extract payment details
       const amount = CallbackMetadata.Item.find(item => item.Name === 'Amount').Value;
       const mpesaReceiptNumber = CallbackMetadata.Item.find(item => item.Name === 'MpesaReceiptNumber').Value;
       const transactionDate = CallbackMetadata.Item.find(item => item.Name === 'TransactionDate').Value;
+      const phoneNumber = CallbackMetadata.Item.find(item => item.Name === 'PhoneNumber').Value;
       
-      // Convert the transaction date from format YYYYMMDDHHMMSS to Date object
+      // Format date
       const formattedDate = new Date(
         transactionDate.toString().replace(
           /(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})/,
@@ -67,6 +68,20 @@ exports.mpesaCallback = async (req, res) => {
         )
       );
 
+      // Create payment log
+      await PaymentLog.create({
+        orderId,
+        mpesaReceiptNumber,
+        phoneNumber: phoneNumber.toString(),
+        amount,
+        transactionDate: formattedDate,
+        resultCode: ResultCode,
+        resultDesc: ResultDesc,
+        status: 'success',
+        rawCallback: req.body
+      });
+
+      // Update order
       const updatedOrder = await Order.findByIdAndUpdate(
         orderId,
         {
@@ -87,12 +102,6 @@ exports.mpesaCallback = async (req, res) => {
         });
       }
 
-      console.log('Payment processed successfully:', {
-        orderId,
-        mpesaReceiptNumber,
-        amount
-      });
-
       res.status(200).json({
         status: 'success',
         message: 'Payment processed successfully',
@@ -104,6 +113,24 @@ exports.mpesaCallback = async (req, res) => {
         }
       });
     } else {
+      // Log failed payment
+      await PaymentLog.create({
+        orderId,
+        resultCode: ResultCode,
+        resultDesc: ResultDesc,
+        status: 'failed',
+        rawCallback: req.body,
+        phoneNumber: req.body.Body?.stkCallback?.CallbackMetadata?.Item?.find(
+          item => item.Name === 'PhoneNumber'
+        )?.Value?.toString() || 'N/A',
+        amount: req.body.Body?.stkCallback?.CallbackMetadata?.Item?.find(
+          item => item.Name === 'Amount'
+        )?.Value || 0,
+        transactionDate: new Date(),
+        mpesaReceiptNumber: 'FAILED_TRANSACTION'
+      });
+
+      // Update order status
       await Order.findByIdAndUpdate(
         orderId,
         {
@@ -111,12 +138,6 @@ exports.mpesaCallback = async (req, res) => {
           status: 'cancelled'
         }
       );
-
-      console.log('Payment failed:', {
-        orderId,
-        resultCode: ResultCode,
-        resultDesc: ResultDesc
-      });
 
       res.status(200).json({
         status: 'failed',
@@ -132,6 +153,54 @@ exports.mpesaCallback = async (req, res) => {
     res.status(500).json({
       status: 'error',
       message: 'Failed to process payment callback'
+    });
+  }
+};
+
+// Get all payment logs (admin only)
+exports.getPaymentLogs = async (req, res) => {
+  try {
+    const logs = await PaymentLog.find()
+      .populate('orderId')
+      .sort('-createdAt');
+
+    res.status(200).json({
+      status: 'success',
+      results: logs.length,
+      data: logs
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: 'error',
+      message: error.message
+    });
+  }
+};
+
+// Get payment by receipt number
+exports.getPaymentByReceipt = async (req, res) => {
+  try {
+    const { receiptNumber } = req.params;
+    
+    const payment = await PaymentLog.findOne({
+      mpesaReceiptNumber: receiptNumber
+    }).populate('orderId');
+
+    if (!payment) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'Payment not found'
+      });
+    }
+
+    res.status(200).json({
+      status: 'success',
+      data: payment
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: 'error',
+      message: error.message
     });
   }
 };

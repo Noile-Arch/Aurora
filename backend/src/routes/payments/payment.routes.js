@@ -1,8 +1,19 @@
 const express = require('express');
 const router = express.Router();
-const { simulatePayment, mpesaCallback } = require('../../controllers/payment/payment.controller');
+const { protect, authorize } = require('../../middlewares/authenticate-access-token');
+const {
+  mpesaCallback,
+  getPaymentLogs,
+  getPaymentByReceipt,
+  simulatePayment
+} = require('../../controllers/payment/payment.controller');
 
-router.post('/simulate-payment', simulatePayment);
 router.post('/mpesa-callback', mpesaCallback);
+
+router.use(protect);
+
+router.get('/logs', authorize('admin'), getPaymentLogs);
+router.get('/receipt/:receiptNumber', authorize('admin'), getPaymentByReceipt);
+router.post('/simulate', authorize('admin'), simulatePayment);
 
 module.exports = router;
