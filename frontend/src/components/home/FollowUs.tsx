@@ -2,7 +2,7 @@ const FollowUs = () => {
   return (
     <div className="w-full h-full px-4 md:px-10 lg:px-20">
       <div className="w-full h-full bg-white shadow-lg shadow-secondary rounded-2xl flex md:flex-row flex-col justify-center items-center p-6">
-        <div className=" h-full md:w-[35%] w-full flex justify-center items-center">
+        <div className=" h-full lg:w-[35%] w-full flex justify-center items-center">
           <div className="w-full h-[200px] lg:h-full ">
             <img
               src="/collage1.jpg"

@@ -2,16 +2,16 @@ import Advantage from "../components/home/Advantage";
 import DesertCarousel from "../components/carousels/DesertCarousel";
 import Hero from "../components/home/Hero";
 import TrustUs from "../components/home/TrustUs";
-import PageLayout from "./PageLayout";
+
 import Menu from "../components/home/Menu";
 import Info from "../components/home/Info";
 import FollowUs from "../components/home/FollowUs";
 import ContactUs from "../components/home/ContactUs";
 
-const LandingPage = () => {
+const LandingPage = () => { 
   return (
-    <PageLayout>
-      <section className="w-full lg:h-[700px]">
+    <>
+      <section className="w-full lg:h-[600px]">
         <Hero />
       </section>
       <section className="w-full lg:h-[600px] py-3 flex flex-col justify-start items-center " id="assortment">
@@ -32,7 +32,7 @@ const LandingPage = () => {
           <TrustUs />
         </div>
       </section>
-      <section className="w-full lg:h-[600px] mt-20 py-10 flex flex-col justify-start items-center " id="advantage">
+      <section className="w-full lg:h-[auto] mt-20 py-10 flex flex-col justify-start items-center " id="advantage">
         <h1 className="text-lg font-['DreamToBerich'] text-chocolate">Our</h1>
         <p className="text-3xl py-4 font-['DreamToBerich']">Best Advantage</p>
         <div className="w-full h-full" >
@@ -46,7 +46,7 @@ const LandingPage = () => {
           <Menu />
         </div>
       </section>
-      <section className="w-full lg:h-[650px] py-3 flex flex-col justify-start items-center " id="info">
+      <section className="w-full lg:h-[auto] py-3 flex flex-col justify-start items-center " id="info">
         <h1 className="text-lg font-['DreamToBerich'] text-chocolate">
           What Our
         </h1>
@@ -69,7 +69,7 @@ const LandingPage = () => {
           <ContactUs />
         </div>
       </section>
-    </PageLayout>
+    </>
   );
 };
 

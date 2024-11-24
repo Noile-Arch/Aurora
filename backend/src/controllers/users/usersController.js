@@ -9,29 +9,39 @@ exports.login = asyncHandler(async (req, res, next) => {
   try {
     const { email, password } = req.body;
     const user = await usersModel.findOne({ email });
+    
     if (!user) {
-      return res
-        .status(500)
-        .json({ message: "Incorrect username or password" });
+      return res.status(401).json({ 
+        status: 'error',
+        message: "Incorrect email or password" 
+      });
     }
-    const isPasswordValid = await bcrypt.compare(password, user.password);
 
+    const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
-      return res.status(400).json({ message: "Incorrect email or password" });
+      return res.status(401).json({ 
+        status: 'error',
+        message: "Incorrect email or password" 
+      });
     }
-    const accessToken = jwt.sign(
+
+    const token = jwt.sign(
       { userId: user._id },
       process.env.JWT_ACCESS_TOKEN,
-      { expiresIn: "30m" }
+      { expiresIn: "30d" }
     );
-    const refreshToken = jwt.sign(
-      { userId: user._id },
-      process.env.JWT_ACCESS_TOKEN
-    );
+
     res.status(200).json({
-      message: "User Logged in successfully!",
-      AccessToken: accessToken,
-      RefreshToken: refreshToken,
+      status: 'success',
+      data: {
+        token,
+        user: {
+          id: user._id,
+          email: user.email,
+          name: user.name || '',
+          role: user.role || 'user'
+        }
+      }
     });
   } catch (error) {
     next(error);
@@ -72,4 +82,50 @@ exports.orders = asyncHandler(async (req,res, next)=>{
     } catch (error) {
         next(error)
     }
+});
+
+exports.verify = asyncHandler(async (req, res) => {
+  try {
+    const token = req.headers.authorization?.split(' ')[1];
+    
+    if (!token) {
+      return res.status(401).json({ 
+        status: 'error',
+        message: 'No token provided' 
+      });
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_ACCESS_TOKEN);
+    const user = await usersModel.findById(decoded.userId).select('-password');
+
+    if (!user) {
+      return res.status(404).json({ 
+        status: 'error',
+        message: 'User not found' 
+      });
+    }
+
+    res.status(200).json({
+      status: 'success',
+      data: {
+        user: {
+          id: user._id,
+          email: user.email,
+          name: user.name,
+          role: user.role
+        }
+      }
+    });
+  } catch (error) {
+    if (error.name === 'JsonWebTokenError') {
+      return res.status(401).json({ 
+        status: 'error',
+        message: 'Invalid token' 
+      });
+    }
+    res.status(500).json({ 
+      status: 'error',
+      message: error.message 
+    });
+  }
 });

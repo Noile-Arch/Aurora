@@ -1,8 +1,8 @@
-import PageLayout from "./PageLayout";
+
 
 const AboutUs = () => {
   return (
-    <PageLayout>
+    <>
       <div className="w-full h-auto">
         <section className="w-full h-[600px] mt-20">
           <img
@@ -107,7 +107,7 @@ const AboutUs = () => {
           <div className="w-full lg:h-[400px]  flex lg:flex-row flex-col justify-center items-center gap-4">
             <div className="lg:w-[50%] h-full md:h-[400px] w-full flex justify-center items-center px-4 ">
               <img
-                src="https://scontent.fnbo8-1.fna.fbcdn.net/v/t39.30808-6/417532589_852386556906521_3748198671435620523_n.jpg?_nc_cat=103&ccb=1-7&_nc_sid=127cfc&_nc_ohc=RkLJvS2eQmAQ7kNvgGy6ol_&_nc_zt=23&_nc_ht=scontent.fnbo8-1.fna&_nc_gid=A0fwnBUXUP6k7QYuDXzbUy4&oh=00_AYCdS5MJTQhIcPAtBANDoLibXoKaBU8P4rl03wNQ310Hhg&oe=67312789"
+                src="https://img.freepik.com/premium-photo/smiling-african-female-bakers-looking-camerachefs-baker-chef-dress-hat-cooking-together-kitchenteam-professional-cooks-uniform-preparing-meals-restaurant-kitchen_73899-10631.jpg"
                 alt="baker"
                 className="w-full h-full object-cover rounded-2xl"
               />
@@ -166,7 +166,7 @@ const AboutUs = () => {
           </div>
         </section>
       </div>
-    </PageLayout>
+    </>
   );
 };
 

@@ -37,15 +37,16 @@ app.use('/uploads', express.static(path.join(__dirname, '../public/uploads')));
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({
-    status: 'error',
-    message: 'Something went wrong!'
+    status: "error",
+    message: "Something went wrong!",
   });
 });
 
 // Database connection
-mongoose.connect(process.env.MONGODB_URI)
-  .then(() => console.log('Connected to MongoDB'))
-  .catch((err) => console.error('MongoDB connection error:', err));
+mongoose
+  .connect(process.env.MONGODB_URI)
+  .then(() => console.log("Connected to MongoDB"))
+  .catch((err) => console.error("MongoDB connection error:", err));
 
 // Start server
 const PORT = process.env.PORT || 5000;
