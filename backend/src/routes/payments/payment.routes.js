@@ -14,6 +14,6 @@ router.use(protect);
 
 router.get('/logs', authorize('admin'), getPaymentLogs);
 router.get('/receipt/:receiptNumber', authorize('admin'), getPaymentByReceipt);
-router.post('/simulate', authorize('admin'), simulatePayment);
+router.post('/simulate', simulatePayment);
 
 module.exports = router;

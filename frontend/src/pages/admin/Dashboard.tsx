@@ -256,6 +256,7 @@ export default function Dashboard() {
               <MdAdd size={20} />
               Add New Product
             </Link>
+           
           </div>
 
           <div className="overflow-x-auto">
@@ -285,7 +286,9 @@ export default function Dashboard() {
                     <td className="whitespace-nowrap px-6 py-4">
                       <div className="flex items-center">
                         <img
-                          src={`${import.meta.env.VITE_API_BASE_URL.split('/api')[0]}/uploads/${product.image.split('uploads/').pop()}`}
+                          src={
+                           `${import.meta.env.VITE_API_BACKEND_URL}${product.image}`
+                          }
                           alt={product.name}
                           className="h-10 w-10 rounded-full object-cover"
                         />

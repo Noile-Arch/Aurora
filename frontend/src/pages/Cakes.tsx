@@ -3,12 +3,14 @@ import { motion } from "framer-motion";
 import { FiFilter } from "react-icons/fi";
 import { IoMdHeartEmpty } from "react-icons/io";
 import { useAuth } from "../hooks/use/user";
+import { useNavigate } from "react-router-dom";
 
 const Cakes = () => {
   const { products, loading } = useAuth();
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 10000]);
   const [showFilters, setShowFilters] = useState(false);
+  const navigate = useNavigate();
   console.log(products);
 
   const categories = [
@@ -110,6 +112,8 @@ const Cakes = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 className="group relative overflow-hidden rounded-lg bg-white shadow-md transition-transform hover:-translate-y-1"
+                onClick={() => navigate(`/product/${cake._id}`)}
+                style={{ cursor: 'pointer' }}
               >
                 <div className="relative h-64 overflow-hidden">
                   <img

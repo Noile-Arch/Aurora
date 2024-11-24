@@ -19,6 +19,9 @@ import Basket from "./pages/views/Basket";
 import AdminRoute from "./access/AdminRoute";
 import DashboardLayout from "./pages/admin/Layout";
 import Cakes from "./pages/Cakes";
+import ProductDetails from "./pages/ProductDetails";
+import Checkout from "./pages/views/Checkout";
+import PaymentStatus from "./pages/views/PaymentStatus";
 
 function App() {
   return (
@@ -30,7 +33,6 @@ function App() {
 
         {/* Admin routes */}
         <Route element={<AdminRoute />}>
-
           <Route path="/admin/dashboard" element={<Dashboard />} />
           <Route path="/admin/add-pastry" element={<AddPastry />} />
 
@@ -50,7 +52,6 @@ function App() {
               </DashboardLayout>
             }
           />
-
         </Route>
 
         {/* Protected routes with MainLayout */}
@@ -104,6 +105,26 @@ function App() {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/product/:id"
+          element={
+            <ProtectedRoute>
+              <MainLayout>
+                <ProductDetails />
+              </MainLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/checkout"
+          element={
+            <ProtectedRoute>
+              <MainLayout>
+                <Checkout />
+              </MainLayout>
+            </ProtectedRoute>
+          }
+        />
 
         {/* Profile routes nested under protection */}
         <Route
@@ -121,6 +142,8 @@ function App() {
           <Route path="/profile/favourites" element={<Favourites />} />
           <Route path="/profile/order-history" element={<OrderHistory />} />
         </Route>
+
+        <Route path="/payment-status/:orderId" element={<PaymentStatus />} />
       </Routes>
     </Router>
   );

@@ -3,157 +3,107 @@ const PaymentLog = require('../../models/payments/paymentLogModel');
 const MpesaService = require('../../services/mpesa.service');
 
 exports.simulatePayment = async (req, res) => {
-    try {
-      const { phoneNumber, amount } = req.body;
+  try {
+    const { phoneNumber, amount, orderId } = req.body;
 
-      if (!phoneNumber || !amount) {
-        return res.status(400).json({
-          status: 'error',
-          message: 'Phone number and amount are required'
-        });
-      }
-      const formattedPhone = phoneNumber.toString().replace(/^\+|^0/, '');
-      
-      console.log('Initiating payment for:', {
-        phoneNumber: formattedPhone,
-        amount: amount
-      });
-      
-      const response = await MpesaService.initiateSTKPush(
-        formattedPhone,
-        amount,
-        'TEST' + Date.now()
-      );
-  
-      res.status(200).json({
-        status: 'success',
-        message: 'STK push initiated',
-        data: response
-      });
-    } catch (error) {
-      console.error('Payment simulation error:', error);
-      res.status(500).json({
+    if (!phoneNumber || !amount || !orderId) {
+      return res.status(400).json({
         status: 'error',
-        message: error.message || 'Payment simulation failed'
+        message: 'Phone number, amount and orderId are required'
       });
     }
-  };
+
+    // Verify order exists and is pending payment
+    const order = await Order.findById(orderId);
+    if (!order) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'Order not found'
+      });
+    }
+
+    if (order.status !== 'pending_payment') {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Order is not pending payment'
+      });
+    }
+
+    // Format phone number to ensure it starts with 254
+    const formattedPhone = phoneNumber.toString().replace(/^\+?254?0?/, '254');
+    
+    console.log('Initiating payment for:', {
+      phoneNumber: formattedPhone,
+      amount: amount,
+      orderId: orderId
+    });
+    
+    // Initiate STK Push
+    const result = await MpesaService.initiateSTKPush(
+      formattedPhone,
+      amount,
+      orderId
+    );
+
+    if (!result) {
+      throw new Error('Failed to initiate M-Pesa payment');
+    }
+
+    res.status(200).json({
+      status: 'success',
+      data: {
+        ...result,
+        orderId
+      }
+    });
+
+  } catch (error) {
+    console.error('Payment simulation error:', error);
+    res.status(500).json({
+      status: 'error',
+      message: error.message || 'Failed to initiate M-Pesa payment'
+    });
+  }
+};
 
 exports.mpesaCallback = async (req, res) => {
   try {
-    console.log('M-Pesa callback received:', JSON.stringify(req.body, null, 2));
-    
-    const { Body: { stkCallback } } = req.body;
-    const { 
-      MerchantRequestID,
-      ResultCode,
-      ResultDesc,
-      CallbackMetadata 
-    } = stkCallback;
+    const { Body } = req.body;
+    const { stkCallback } = Body;
+    const { ResultCode, ResultDesc, CallbackMetadata } = stkCallback;
 
-    const orderId = MerchantRequestID.replace('TEST', '');
+    // Find order by checking AccountReference in the callback
+    const orderId = stkCallback.AccountReference.replace('ORDER', '');
+    const order = await Order.findById(orderId);
+
+    if (!order) {
+      throw new Error('Order not found');
+    }
 
     if (ResultCode === 0) {
-      // Extract payment details
-      const amount = CallbackMetadata.Item.find(item => item.Name === 'Amount').Value;
-      const mpesaReceiptNumber = CallbackMetadata.Item.find(item => item.Name === 'MpesaReceiptNumber').Value;
-      const transactionDate = CallbackMetadata.Item.find(item => item.Name === 'TransactionDate').Value;
-      const phoneNumber = CallbackMetadata.Item.find(item => item.Name === 'PhoneNumber').Value;
+      // Payment successful
+      order.status = 'processing';
+      order.payment.status = 'completed';
+      // Extract payment details from CallbackMetadata
+      const metadata = CallbackMetadata.Item.reduce((acc, item) => {
+        acc[item.Name] = item.Value;
+        return acc;
+      }, {});
       
-      // Format date
-      const formattedDate = new Date(
-        transactionDate.toString().replace(
-          /(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})/,
-          '$1-$2-$3T$4:$5:$6'
-        )
-      );
-
-      // Create payment log
-      await PaymentLog.create({
-        orderId,
-        mpesaReceiptNumber,
-        phoneNumber: phoneNumber.toString(),
-        amount,
-        transactionDate: formattedDate,
-        resultCode: ResultCode,
-        resultDesc: ResultDesc,
-        status: 'success',
-        rawCallback: req.body
-      });
-
-      // Update order
-      const updatedOrder = await Order.findByIdAndUpdate(
-        orderId,
-        {
-          'payment.status': 'completed',
-          'payment.mpesaReceiptNumber': mpesaReceiptNumber,
-          'payment.transactionDate': formattedDate,
-          'payment.transactionAmount': amount,
-          'status': 'processing'
-        },
-        { new: true }
-      );
-
-      if (!updatedOrder) {
-        console.error('Order not found:', orderId);
-        return res.status(404).json({
-          status: 'error',
-          message: 'Order not found'
-        });
-      }
-
-      res.status(200).json({
-        status: 'success',
-        message: 'Payment processed successfully',
-        data: {
-          orderId,
-          mpesaReceiptNumber,
-          amount,
-          transactionDate: formattedDate
-        }
-      });
+      order.payment.mpesaReceiptNumber = metadata.MpesaReceiptNumber;
+      order.payment.transactionDate = new Date();
+      order.payment.transactionAmount = metadata.Amount;
     } else {
-      // Log failed payment
-      await PaymentLog.create({
-        orderId,
-        resultCode: ResultCode,
-        resultDesc: ResultDesc,
-        status: 'failed',
-        rawCallback: req.body,
-        phoneNumber: req.body.Body?.stkCallback?.CallbackMetadata?.Item?.find(
-          item => item.Name === 'PhoneNumber'
-        )?.Value?.toString() || 'N/A',
-        amount: req.body.Body?.stkCallback?.CallbackMetadata?.Item?.find(
-          item => item.Name === 'Amount'
-        )?.Value || 0,
-        transactionDate: new Date(),
-        mpesaReceiptNumber: 'FAILED_TRANSACTION'
-      });
-
-      // Update order status
-      await Order.findByIdAndUpdate(
-        orderId,
-        {
-          'payment.status': 'failed',
-          status: 'cancelled'
-        }
-      );
-
-      res.status(200).json({
-        status: 'failed',
-        message: ResultDesc,
-        data: {
-          orderId,
-          resultCode: ResultCode
-        }
-      });
+      // Payment failed
+      order.payment.status = 'failed';
     }
+
+    await order.save();
+
+    res.status(200).json({ ResultCode: 0, ResultDesc: "Success" });
   } catch (error) {
-    console.error('Callback processing error:', error);
-    res.status(500).json({
-      status: 'error',
-      message: 'Failed to process payment callback'
-    });
+    console.error('M-Pesa callback error:', error);
+    res.status(500).json({ ResultCode: 1, ResultDesc: error.message });
   }
 };
 
