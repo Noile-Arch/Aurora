@@ -1,0 +1,272 @@
+@base_url = http://localhost:5000/api
+@contentType = application/json
+@adminToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3NDIyYzFkMGViMTAwM2Q1M2ZhODdhNyIsImlhdCI6MTczMjM5MTc2NSwiZXhwIjoxNzM0OTgzNzY1fQ.2XyyBtCVB8JkQiTsxJL4jWEvZl-jp9amXqCyViQFNLk
+@authToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3NDIyYzE3MGViMTAwM2Q1M2ZhODdhNCIsImlhdCI6MTczMjM5MTc0NCwiZXhwIjoxNzM0OTgzNzQ0fQ.lI7kIEMUEUYSK7Hre-UoNuQxd8qZgHdxrqO0BS6BIeI
+###
+POST {{base_url}}/payments/simulate-payment
+Content-Type: {{contentType}}
+
+{
+    "phoneNumber": "254719520494",
+    "amount": 1
+}
+
+### mpesa callback
+POST {{base_url}}/payments/mpesa-callback
+
+### Register new user
+POST {{base_url}}/auth/register
+Content-Type: {{contentType}}
+
+{
+    "name": "Test User",
+    "email": "test@example.com",
+    "password": "password123"
+}
+
+### Register admin user
+POST {{base_url}}/auth/register
+Content-Type: {{contentType}}
+
+{
+    "name": "Admin User",
+    "email": "admin@example.com",
+    "password": "admin123",
+    "role": "admin"
+}
+
+### Login with correct credentials
+POST {{base_url}}/auth/login
+Content-Type: {{contentType}}
+
+{
+    "email": "test@example.com",
+    "password": "password123"
+}
+
+### Login with admin credentials
+POST {{base_url}}/auth/login
+Content-Type: {{contentType}}
+
+{
+    "email": "admin@example.com",
+    "password": "admin123"
+}
+
+### Login with wrong password
+POST {{base_url}}/auth/login
+Content-Type: {{contentType}}
+
+{
+    "email": "test@example.com",
+    "password": "wrongpassword"
+}
+
+### Create Product
+POST {{base_url}}/products
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+    "name": "Chocolate Cake",
+    "description": "Delicious chocolate cake with cream filling",
+    "price": 2500,
+    "category": "cakes",
+    "image": "cake-image-url.jpg",
+    "ingredients": ["chocolate", "flour", "sugar", "eggs"],
+    "preparationTime": 60
+}
+
+### Get All Products
+GET {{base_url}}/products
+
+### Get Product by ID
+GET {{base_url}}/products/67422fabbdcac86e1f10b6a3
+
+### Update Product
+PUT {{base_url}}/products/67422fabbdcac86e1f10b6a3
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+    "name": "Updated Chocolate Cake",
+    "price": 2800,
+    "isAvailable": true
+}
+
+### Delete Product
+DELETE {{base_url}}/products/67422fabbdcac86e1f10b6a3
+Authorization: Bearer {{authToken}}
+
+### Search Products
+GET {{base_url}}/products/search?query=Delicious chocolate
+
+### Get Products by Category
+GET {{base_url}}/products/category/cakes
+
+### Get Products with Filters
+GET {{base_url}}/products?category=cakes&minPrice=2000&maxPrice=3000&isAvailable=true
+
+
+
+### Create New Order
+POST {{base_url}}/orders
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+    "items": [
+        {
+            "product": "67422c1d0eb1003d53fa87a7",
+            "quantity": 1,
+            "price": 1
+        }
+    ],
+    "deliveryAddress": {
+        "street": "123 Test Street",
+        "city": "Nairobi",
+        "state": "Nairobi",
+        "postalCode": "00100"
+    },
+    "phoneNumber": "254719520494",
+    "specialInstructions": "Please write 'Happy Birthday' on the cake"
+}
+
+### Get User's Orders
+GET {{base_url}}/orders/my-orders
+Authorization: Bearer {{authToken}}
+
+### Get All Orders (Admin Only)
+GET {{base_url}}/orders/all
+Authorization: Bearer {{adminToken}}
+
+### Update Order Status (Admin Only)
+PATCH {{base_url}}/orders/65f1234567890abcdef12347/status  // Replace with actual order ID
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+    "status": "processing"
+}
+
+### Test Different Order Statuses
+
+### Update to Processing
+PATCH {{base_url}}/orders/65f1234567890abcdef12347/status
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+    "status": "processing"
+}
+
+### Update to Preparing
+PATCH {{base_url}}/orders/65f1234567890abcdef12347/status
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+    "status": "preparing"
+}
+
+### Update to Ready
+PATCH {{base_url}}/orders/65f1234567890abcdef12347/status
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+    "status": "ready"
+}
+
+### Update to Delivered
+PATCH {{base_url}}/orders/65f1234567890abcdef12347/status
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+    "status": "delivered"
+}
+
+### Create Order with Multiple Items
+POST {{base_url}}/orders
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+    "items": [
+        {
+            "product": "65f1234567890abcdef12345",
+            "quantity": 2,
+            "price": 2500
+        },
+        {
+            "product": "65f1234567890abcdef12346",
+            "quantity": 1,
+            "price": 1800
+        },
+        {
+            "product": "65f1234567890abcdef12347",
+            "quantity": 3,
+            "price": 500
+        }
+    ],
+    "deliveryAddress": {
+        "street": "456 Sample Road",
+        "city": "Nairobi",
+        "state": "Nairobi",
+        "postalCode": "00200"
+    },
+    "phoneNumber": "254719520494",
+    "specialInstructions": "All items to be delivered together"
+}
+
+### Create Order with Invalid Product ID (Should Fail)
+POST {{base_url}}/orders
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+    "items": [
+        {
+            "product": "invalid_product_id",
+            "quantity": 1,
+            "price": 2500
+        }
+    ],
+    "deliveryAddress": {
+        "street": "123 Test Street",
+        "city": "Nairobi",
+        "state": "Nairobi",
+        "postalCode": "00100"
+    },
+    "phoneNumber": "254719520494",
+    "specialInstructions": "Test order"
+}
+
+### Create Order with Missing Required Fields (Should Fail)
+POST {{base_url}}/orders
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+    "items": [
+        {
+            "product": "65f1234567890abcdef12345",
+            "quantity": 1
+        }
+    ]
+}
+
+### Update Order Status with Invalid Status (Should Fail)
+PATCH {{base_url}}/orders/65f1234567890abcdef12347/status
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+    "status": "invalid_status"
+}
+
+### Get Non-existent Order (Should Fail)
+GET {{base_url}}/orders/nonexistent_id
+Authorization: Bearer {{authToken}}
+
