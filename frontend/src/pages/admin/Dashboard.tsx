@@ -285,9 +285,7 @@ export default function Dashboard() {
                     <td className="whitespace-nowrap px-6 py-4">
                       <div className="flex items-center">
                         <img
-                          src={
-                           `${import.meta.env.VITE_API_BACKEND_URL}${product.image}`
-                          }
+                          src={`${import.meta.env.VITE_API_BASE_URL.split('/api')[0]}/uploads/${product.image.split('uploads/').pop()}`}
                           alt={product.name}
                           className="h-10 w-10 rounded-full object-cover"
                         />

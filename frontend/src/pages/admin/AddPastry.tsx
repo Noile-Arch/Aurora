@@ -118,7 +118,7 @@ const AddPastry = () => {
       }
 
       // Log form data for debugging
-      for (let pair of formDataToSend.entries()) {
+      for (const pair of formDataToSend.entries()) {
         console.log(pair[0] + ': ' + pair[1]);
       }
 

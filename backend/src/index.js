@@ -20,9 +20,13 @@ app.use(cors({
   origin: process.env.FRONTEND_URL || 'http://localhost:5173',
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  exposedHeaders: ['Content-Type', 'Authorization']
 }));
-app.use(helmet());
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: "cross-origin" },
+  crossOriginEmbedderPolicy: false
+}));
 
 // Routes
 app.use('/api/auth', authRoutes);
@@ -32,7 +36,14 @@ app.use('/api/payments', paymentRoutes);
 app.use('/api/admin', dashboardRoutes);
 
 // Serve static files from public directory
-app.use('/uploads', express.static(path.join(__dirname, '../public/uploads')));
+app.use('/uploads', 
+  express.static(path.join(__dirname, '../public/uploads'), {
+    setHeaders: (res) => {
+      res.set('Cross-Origin-Resource-Policy', 'cross-origin');
+      res.set('Access-Control-Allow-Origin', process.env.FRONTEND_URL || 'http://localhost:5173');
+    }
+  })
+);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
