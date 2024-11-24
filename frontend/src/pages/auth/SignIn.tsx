@@ -4,16 +4,15 @@ import { FaEyeSlash, FaEye } from "react-icons/fa";
 import { useForm } from "react-hook-form";
 import { loginSchema, type LoginInput } from "./schema";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
-import { useAuth } from "../../hooks/useAuth";
+import { useAuth } from "../../hooks/use/user";
 
 const SignIn = () => {
   const navigate = useNavigate();
+  const { login, user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
-  const [inpType, setInpType] = useState("password");
-  const { setUser } = useAuth();
-
+  const [showPassword, setShowPassword] = useState(false);
   const {
     register,
     handleSubmit,
@@ -21,185 +20,111 @@ const SignIn = () => {
     setError,
   } = useForm<LoginInput>({
     resolver: zodResolver(loginSchema),
-    defaultValues: {
-      email: "",
-      password: "",
-    },
   });
 
-  const onSubmit = async (data: LoginInput) => {
+  useEffect(() => {
+    if (user) {
+      navigate("/", { replace: true });
+      if(user.role == "admin"){
+        navigate("/admin/dashboard", { replace: true })
+      }
+    }
+  }, [user, navigate]);
+
+  const handleLogin = async (data: LoginInput) => {
     try {
       setIsLoading(true);
-      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/auth/login`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email: data.email,
-          password: data.password,
-        }),
-      });
-
-      const result = await res.json();
-
-      if (!res.ok) {
-        switch (res.status) {
-          case 401:
-            setError("password", {
-              type: "manual",
-              message: "Invalid email or password",
-            });
-            toast.error("Invalid credentials");
-            break;
-          case 429:
-            toast.error("Too many attempts. Please try again later");
-            break;
-          case 403:
-            toast.error("Account locked. Please contact support");
-            break;
-          default:
-            toast.error("An error occurred. Please try again");
-        }
-        return;
-      }
-
-      const { data: {user, token} } = result;
-      
-      localStorage.setItem("auroraAuth", JSON.stringify(token));
-      
-      setUser(user);
-
-      toast.success(`Welcome back, ${user.email}!`);
-
+      await login(data.email, data.password);
+      // console.log(data);
+      // console.log(user);
+      toast.success(`Welcome back!`);
+      // navigate("/", { replace: true });
     } catch (error) {
-      console.error("Login error:", error);
-      toast.error("Network error. Please check your connection");
+      const status = (error as { response?: { status: number } })?.response
+        ?.status;
+      console.log(error);
+
+      if (status === 401) {
+        setError("password", { message: "Invalid email or password" });
+        toast.error("Invalid credentials");
+      } else if (status === 429) {
+        toast.error("Too many attempts. Please try again later");
+      } else {
+        toast.error("Login failed. Please try again");
+      }
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleTogglePass = () => {
-    setInpType((prevType) => (prevType === "password" ? "text" : "password"));
-  };
-
-  useEffect(() => {
-    const checkExistingSession = async () => {
-      const token = localStorage.getItem("auroraAuth");
-      if (token) {
-        try {
-          const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/auth/verify`, {
-            headers: {
-              Authorization: `Bearer ${JSON.parse(token)}`,
-            },
-          });
-          
-          if (res.ok) {
-            const { user } = await res.json();
-            setUser(user);
-            navigate("/home/overview");
-          } else {
-            localStorage.removeItem("auroraAuth");
-          }
-        } catch (error) {
-          console.error("Session verification error:", error);
-        }
-      }
-    };
-
-    checkExistingSession();
-  }, [navigate, setUser]);
-
   return (
     <AuthLayout title="Welcome Back!">
       <form
-        className="w-full flex-1 flex flex-col gap-[20px] px-4"
-        onSubmit={handleSubmit(onSubmit)}
+        onSubmit={handleSubmit(handleLogin)}
+        className="w-full flex-1 flex flex-col gap-5 px-4"
       >
-        <div className="w-full flex flex-col gap-[5px]">
-          <label
-            htmlFor="email"
-            className="text-primary-100 text-sm md:text-base font-semibold"
-          >
-            Email:
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="email" className="text-sm font-semibold">
+            Email
           </label>
-          <span className="text-xs text-zinc-600 capitalize">
-            Please provide a valid email address
-          </span>
           <input
-            id="email"
+            {...register("email")}
             type="email"
+            id="email"
             autoComplete="email"
             disabled={isLoading}
-            className="outline-none px-2 w-full bg-[transparent] h-[60px] border border-[gray]/20 placeholder:text-[gray]/60 disabled:opacity-50"
-            placeholder="johndoe@email.com"
-            {...register("email")}
+            placeholder="Enter your email"
+            className="h-12 px-3 bg-white border rounded-lg disabled:opacity-50"
           />
           {errors.email && (
-            <p className="text-xs text-[red]/80">
-              {errors.email.message}
-            </p>
+            <span className="text-xs text-red-500">{errors.email.message}</span>
           )}
         </div>
 
-        <div className="w-full flex flex-col gap-[5px]">
-          <label
-            htmlFor="password"
-            className="text-primary-100 text-sm md:text-base font-semibold"
-          >
-            Password:
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="password" className="text-sm font-semibold">
+            Password
           </label>
-          <span className="text-xs text-zinc-600 capitalize">
-            Please provide a strong password
-          </span>
-          <div className="w-full flex flex-row border border-[gray]/20">
+          <div className="relative">
             <input
+              {...register("password")}
+              type={showPassword ? "text" : "password"}
               id="password"
-              type={inpType}
               autoComplete="current-password"
               disabled={isLoading}
-              className="outline-none px-2 w-full bg-[transparent] h-[60px] placeholder:text-[gray]/60 disabled:opacity-50"
-              placeholder="*****"
-              {...register("password")}
+              placeholder="Enter your password"
+              className="h-12 px-3 bg-white w-full border rounded-lg disabled:opacity-50"
             />
             <button
               type="button"
-              onClick={handleTogglePass}
-              className="h-full flex items-center justify-center px-4 text-gray-500 hover:text-gray-700"
-              disabled={isLoading}
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-1/2 -translate-y-1/2"
             >
-              {inpType === "password" ? <FaEyeSlash /> : <FaEye />}
+              {showPassword ? <FaEyeSlash /> : <FaEye />}
             </button>
           </div>
           {errors.password && (
-            <p className="text-xs text-[red]/80">
+            <span className="text-xs text-red-500">
               {errors.password.message}
-            </p>
+            </span>
           )}
         </div>
 
         <button
           type="submit"
           disabled={isLoading}
-          className="transition-all ease-in-out w-full h-[60px] md:h-[60px] p-4 bg-chocolate items-center justify-center cursor-pointer rounded-lg flex mt-[10px] disabled:opacity-50 disabled:cursor-not-allowed"
+          className="h-12 mt-4 bg-chocolate text-white rounded-lg font-medium
+            disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <span className="font-semibold capitalize text-white">
-            {isLoading ? "Logging in..." : "Login"}
-          </span>
+          {isLoading ? "Signing in..." : "Sign In"}
         </button>
 
-        <div>
-          <p className="text-sm">
-            Don't have an account?{" "}
-            <Link
-              to="/register"
-              className="ml-[5px] text-chocolate underline text-sm"
-            >
-              Sign Up
-            </Link>
-          </p>
-        </div>
+        <p className="text-sm text-center">
+          Don't have an account?{" "}
+          <Link to="/register" className="text-chocolate hover:underline">
+            Sign Up
+          </Link>
+        </p>
       </form>
     </AuthLayout>
   );

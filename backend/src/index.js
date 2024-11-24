@@ -8,7 +8,7 @@ const authRoutes = require('./routes/auth/auth.routes');
 const productRoutes = require('./routes/products/productRoutes');
 const orderRoutes = require('./routes/orders/order.routes');
 const paymentRoutes = require('./routes/payments/payment.routes');
-
+const dashboardRoutes = require('./routes/dashboard/dashboard.routes');
 const app = express();
 
 // Middleware
@@ -22,8 +22,8 @@ app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/payments', paymentRoutes);
-
-
+app.use('/api/admin', dashboardRoutes);
+  
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
