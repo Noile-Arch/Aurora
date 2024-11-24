@@ -4,7 +4,8 @@ const {
   createOrder,
   getOrders,
   getAllOrders,
-  updateOrderStatus
+  updateOrderStatus,
+  cancelOrder
 } = require('../../controllers/orders/order.controller');
 const { mpesaCallback } = require('../../controllers/payment/payment.controller');
 
@@ -21,5 +22,7 @@ router.patch('/:id/status', authorize('admin'), updateOrderStatus);
 
 // M-Pesa callback route (public)
 router.post('/mpesa/callback', mpesaCallback);
+
+router.post('/:id/cancel', protect, cancelOrder);
 
 module.exports = router;

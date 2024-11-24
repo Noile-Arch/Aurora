@@ -26,26 +26,20 @@ const orderSchema = new mongoose.Schema({
     required: true
   },
   deliveryAddress: {
-    street: String,
-    city: String,
-    state: String,
     postalCode: String
   },
   status: {
     type: String,
-    enum: ['pending', 'processing', 'preparing', 'ready', 'delivered', 'cancelled'],
-    default: 'pending'
+    enum: ['pending_payment', 'processing', 'completed', 'cancelled'],
+    default: 'pending_payment'
   },
   payment: {
     phoneNumber: String,
     status: {
       type: String,
-      enum: ['pending', 'completed', 'failed'],
+      enum: ['pending', 'completed', 'failed', 'cancelled'],
       default: 'pending'
-    },
-    mpesaReceiptNumber: String,
-    transactionDate: Date,
-    transactionAmount: Number
+    }
   },
   specialInstructions: String
 }, {

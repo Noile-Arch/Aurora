@@ -287,7 +287,7 @@ export default function Dashboard() {
                       <div className="flex items-center">
                         <img
                           src={
-                           `${product.image}`
+                           `${import.meta.env.VITE_API_BACKEND_URL}${product.image}`
                           }
                           alt={product.name}
                           className="h-10 w-10 rounded-full object-cover"

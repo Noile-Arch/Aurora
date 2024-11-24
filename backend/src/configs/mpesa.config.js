@@ -1,28 +1,11 @@
-const axios = require('axios');
-
-class MpesaConfig {
-  constructor() {
-    this.consumerKey = process.env.MPESA_CONSUMER_KEY;
-    this.consumerSecret = process.env.MPESA_CONSUMER_SECRET;
-    this.passkey = process.env.MPESA_PASSKEY;
-    this.shortcode = process.env.MPESA_SHORTCODE;
-    this.environment = process.env.MPESA_ENVIRONMENT || 'sandbox';
-    this.baseUrl = 'https://sandbox.safaricom.co.ke';
-  }
-
-  async getAccessToken() {
-    const auth = Buffer.from(`${this.consumerKey}:${this.consumerSecret}`).toString('base64');
-    try {
-      const response = await axios.get(`${this.baseUrl}/oauth/v1/generate?grant_type=client_credentials`, {
-        headers: {
-          Authorization: `Basic ${auth}`,
-        },
-      });
-      return response.data.access_token;
-    } catch (error) {
-      throw new Error('Failed to get M-Pesa access token');
-    }
-  }
-}
-
-module.exports = new MpesaConfig();
+module.exports = {
+  MPESA_CONSUMER_KEY: process.env.MPESA_CONSUMER_KEY,
+  MPESA_CONSUMER_SECRET: process.env.MPESA_CONSUMER_SECRET,
+  MPESA_PASSKEY: process.env.MPESA_PASSKEY,
+  MPESA_SHORTCODE: process.env.MPESA_SHORTCODE || '174379',
+  MPESA_ENVIRONMENT: process.env.MPESA_ENVIRONMENT || 'sandbox',
+  MPESA_API_URL: 'https://sandbox.safaricom.co.ke',
+  CALLBACK_URL: process.env.BACKEND_URL + '/api/payments/mpesa-callback',
+  TIMEOUT_URL: process.env.BACKEND_URL + '/api/payments/timeout',
+  RESULT_URL: process.env.BACKEND_URL + '/api/payments/result'
+};
