@@ -256,6 +256,7 @@ export default function Dashboard() {
               <MdAdd size={20} />
               Add New Product
             </Link>
+           
           </div>
 
           <div className="overflow-x-auto">
@@ -286,7 +287,7 @@ export default function Dashboard() {
                       <div className="flex items-center">
                         <img
                           src={
-                           `${import.meta.env.VITE_API_BACKEND_URL}${product.image}`
+                           `${product.image}`
                           }
                           alt={product.name}
                           className="h-10 w-10 rounded-full object-cover"
