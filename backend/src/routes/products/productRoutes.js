@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { protect, authorize } = require('../../middlewares/authenticate-access-token');
+const upload = require('../../middlewares/multer');
 const {
   createProduct,
   getAllProducts,
@@ -21,8 +22,8 @@ router.get('/:id', getProduct);
 router.use(protect);
 
 // Admin and staff only routes
-router.post('/', authorize('admin', 'staff'), createProduct);
-router.put('/:id', authorize('admin', 'staff'), updateProduct);
+router.post('/', authorize('admin', 'staff'), upload.single('image'), createProduct);
+router.put('/:id', authorize('admin', 'staff'), upload.single('image'), updateProduct);
 router.delete('/:id', authorize('admin', 'staff'), deleteProduct);
 
 module.exports = router;

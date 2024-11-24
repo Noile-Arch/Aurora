@@ -1,8 +1,13 @@
 const express = require('express');
 const router = express.Router();
 const { protect, authorize } = require('../../middlewares/authenticate-access-token');
-const { getDashboardMetrics } = require('../../controllers/dashboard/dashboard.controller');
+const { getDashboardData } = require('../../controllers/dashboard/dashboard.controller');
 
-router.get('/dashboard', protect, authorize('admin'), getDashboardMetrics);
+// Protect all dashboard routes
+router.use(protect);
+router.use(authorize('admin'));
+
+// Get dashboard data
+router.get('/dashboard', getDashboardData);
 
 module.exports = router;
