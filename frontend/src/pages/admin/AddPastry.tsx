@@ -273,7 +273,7 @@ const AddPastry = () => {
               onChange={(e) =>
                 setFormData((prev) => ({
                   ...prev,
-                  inAvailable: e.target.checked,
+                  isAvailable: e.target.checked,
                 }))
               }
               className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-purple-500 bg-white"
