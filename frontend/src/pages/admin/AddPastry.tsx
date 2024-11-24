@@ -72,29 +72,39 @@ const AddPastry = () => {
 
     try {
       const formDataToSend = new FormData();
-      Object.entries(formData).forEach(([key, value]) => {
-        if (value !== null) {
-          formDataToSend.append(key, value);
-        }
-      });
+      
+      formDataToSend.append('name', formData.name);
+      formDataToSend.append('description', formData.description);
+      formDataToSend.append('price', formData.price.toString());
+      formDataToSend.append('category', formData.category);
+      formDataToSend.append('preparationTime', formData.preparationTime.toString());
+      formDataToSend.append('isAvailable', formData.isAvailable.toString());
+      
+      if (formData.image) {
+        formDataToSend.append('image', formData.image);
+      }
 
-      console.log(formDataToSend);
-      const authToken: string | null = localStorage.getItem("auroraAuth");
-      const userToken: string = authToken !== null ? JSON.parse(authToken) : "";
+      const token = localStorage.getItem("auroraAuth");
+      
+      if (!token) {
+        throw new Error("Authentication token not found");
+      }
 
       const response = await fetch(
-        `${import.meta.env.VITE_API_BASE_URL}/products`,
+        `${import.meta.env.VITE_API_BASE_URL}/products/`,
         {
           method: "POST",
           headers: {
-            Authorization: `Bearer ${JSON.parse(userToken)}`,
+            Authorization: `Bearer ${token.replace(/"/g, '')}`,
           },
           body: formDataToSend,
         }
       );
 
+      const data = await response.json();
+
       if (!response.ok) {
-        throw new Error("Failed to add pastry");
+        throw new Error(data.message || "Failed to add pastry");
       }
 
       setSuccess("Pastry added successfully!");
@@ -110,6 +120,7 @@ const AddPastry = () => {
       setImagePreview("");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to add pastry");
+      console.error("Error details:", err);
     } finally {
       setLoading(false);
     }
