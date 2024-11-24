@@ -11,7 +11,7 @@ import ContactUs from "../components/home/ContactUs";
 const LandingPage = () => { 
   return (
     <>
-      <section className="w-full lg:h-[700px]">
+      <section className="w-full lg:h-[600px]">
         <Hero />
       </section>
       <section className="w-full lg:h-[600px] py-3 flex flex-col justify-start items-center " id="assortment">

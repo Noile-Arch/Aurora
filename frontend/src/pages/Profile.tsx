@@ -24,7 +24,7 @@ const Profile = () => {
   const isActive = (path: string) => location.pathname == path;
   return (
     <>
-      <div className="w-full max-h-screen h-screen pt-20 ">
+      <div className="w-full max-h-screen h-screen pt-0 ">
         <div className="w-full h-full flex flex-row px-4 md:px-10 xl:px-[50px] ">
           <section className="w-1/5 h-full p-10 ">
             <div className="w-full h-full flex flex-col justify-start items-start gap-10">

@@ -16,38 +16,35 @@ import SignUp from "./pages/auth/SignUp";
 import Dashboard from "./pages/admin/Dashboard";
 import AddPastry from "./pages/admin/AddPastry";
 import Basket from "./pages/views/Basket";
+import AdminRoute from "./access/AdminRoute";
 
 function App() {
   return (
-
-    <>
-      <Router>
-        <Routes>
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/login" element={<SignIn />} />
-          <Route path="/register" element={<SignUp />} />
-          <Route path="/about" element={<AboutUs />} />
-          <Route path="/contact-us" element={<ContactUs />} />
-
-          <Route path="/admin/dashboard" element={<Dashboard />} />
-          <Route path="/admin/add-pastry" element={<AddPastry />} />
-
-          <Route path="/cart" element={<Basket />} />
-          <Route path="/profile" element={<Profile />}>
-            <Route path="/profile/profile-info" element={<ProfileInfo />} />
-            <Route path="/profile/notifications" element={<Notifications />} />
-            <Route path="/profile/favourites" element={<Favourites />} />
-            <Route path="/profile/order-history" element={<OrderHistory />} />
-          </Route>
-        </Routes>
-      </Router>
-    </>
-
     <Router>
       <Routes>
         {/* Auth routes - no protection or layout */}
         <Route path="/login" element={<SignIn />} />
         <Route path="/register" element={<SignUp />} />
+
+        {/* Admin routes */}
+        <Route element={<AdminRoute />}>
+          <Route
+            path="/admin/dashboard"
+            element={
+              <MainLayout>
+                <Dashboard />
+              </MainLayout>
+            }
+          />
+          <Route
+            path="/admin/add-pastry"
+            element={
+              <MainLayout>
+                <AddPastry />
+              </MainLayout>
+            }
+          />
+        </Route>
 
         {/* Protected routes with MainLayout */}
         <Route

@@ -1,8 +1,8 @@
 const Hero = () => {
   return (
-    <section className="h-full w-full ">
-      <div className="w-full lg:text-5xl sm:text-2xl font-bold h-full flex flex-col-reverse lg:flex-row justify-center  gap-4 items-center px-4 py-8 md:px-10 xl:px-[80px]">
-        <div className="lg:w-[60%] sm:px-10 sm:w-full w-full h-full flex flex-col lg:pt-20 justify-center lg:items-start items-center">
+    <section className="h-full w-full">
+      <div className="w-full lg:text-5xl sm:text-2xl font-bold h-full flex flex-col-reverse lg:flex-row justify-center  gap-4 items-center px-4 md:px-10 xl:px-[80px]">
+        <div className="lg:w-[60%] sm:px-10 sm:w-full w-full h-full flex flex-col justify-center lg:items-start items-center">
           <h1 className="w-full font-['DreamToBerich'] text-black  lg:text-2xl text-lg gap-7 flex flex-col justify-center items-center lg:items-start">
             Artisan Cakes for <br />
             <span className="lg:text-7xl text-4xl sm:text-5xl text-chocolate">
@@ -21,10 +21,10 @@ const Hero = () => {
         <div className="lg:w-[40%] w-full sm:h-[300px] lg:h-full h-full flex justify-center items-center p-2">
           <div className="w-full h-full pt-[80px]  ">
             <img
-              src="https://img.freepik.com/free-photo/view-delicious-sweet-cupcake-dessert-with-frosting_23-2150679682.jpg?t=st=1730876308~exp=1730879908~hmac=0138585ef6faec160d3895ac6b6c9dea384e810968695e4bf04ab9c96d109eb8&w=1380"
+              src="https://img.freepik.com/free-photo/gourmet-chocolate-dessert-with-colorful-candy-decorations-generated-by-ai_188544-15708.jpg?t=st=1732440410~exp=1732444010~hmac=1b380178b29a316ae4640ffada202a5ee1a4f3b534e79dba9c7353fe9000dd05&w=1380"
               alt=""
               loading="lazy"
-              className="w-full h-full rounded-2xl object-center object-cover"
+              className="w-full h-full rounded-2xl object-right object-cover"
             />
           </div>
         </div>
